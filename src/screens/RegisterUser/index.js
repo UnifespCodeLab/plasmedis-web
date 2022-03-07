@@ -28,14 +28,12 @@ import * as Yup from 'yup';
 
 import * as S from './styles';
 import * as Usuario from '../../domain/usuarios';
-import * as Bairro from '../../domain/bairros';
 
 import {Context as AuthContext} from '../../components/stores/Auth';
 
 const RegisterUser = (...props) => {
   const {token} = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
-  const [neighborhoodData, setNeighborhoodData] = useState(null);
   const [userTypeData, setUserTypeData] = useState(null);
 
   const [checkingUsernameAvailability, setCheckingUsernameAvailability] =
@@ -82,7 +80,6 @@ const RegisterUser = (...props) => {
       email: Yup.string().email('Insira um e-mail válido'),
       name: Yup.string().required('O Nome é obrigatório'),
       password: Yup.string().required('A Senha é obrigatória'),
-      neighborhood: Yup.number().required('O Bairro é obrigatório'),
       userType: Yup.number().required('O Tipo é obrigatório'),
     });
   }, [token]);
@@ -143,8 +140,6 @@ const RegisterUser = (...props) => {
     if (isNil(token) || isEmpty(token)) return;
     setLoading(true);
 
-    const neighborhoodDataObject = await Bairro.getAll(token);
-
     // Constante deverá vir da Api
     const userTypeDataObject = [
       {
@@ -161,7 +156,6 @@ const RegisterUser = (...props) => {
       },
     ];
 
-    setNeighborhoodData(neighborhoodDataObject);
     setUserTypeData(userTypeDataObject);
 
     setLoading(false);
@@ -277,38 +271,6 @@ const RegisterUser = (...props) => {
 
         <FormControl
           mb={4}
-          isInvalid={!!errors?.neighborhood}
-          errortext={errors?.neighborhood}>
-          <FormLabel color="#000">Bairro</FormLabel>
-          <Select
-            color="#000"
-            spacing={4}
-            direction="row"
-            {...register('neighborhood', {
-              validateOn: 'onChange',
-              defaultValue: 'DEFAULT',
-            })}>
-            <option value="DEFAULT" disabled>
-              Selecione uma opção
-            </option>
-            {neighborhoodData
-              ? neighborhoodData.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                  </option>
-                ))
-              : null}
-          </Select>
-
-          <FormErrorMessage>
-            <Alert status="error">
-              <AlertIcon />
-              <AlertDescription>{errors?.neighborhood}</AlertDescription>
-            </Alert>
-          </FormErrorMessage>
-        </FormControl>
-        <FormControl
-          mb={4}
           isInvalid={!!errors?.userType}
           errortext={errors?.userType}>
           <FormLabel color="#000">Tipo</FormLabel>
@@ -348,7 +310,6 @@ const RegisterUser = (...props) => {
     checkingUsernameAvailability,
     usernameChecked,
     userTypeData,
-    neighborhoodData,
   ]);
 
   const onSubmit = useCallback(
@@ -400,7 +361,7 @@ const RegisterUser = (...props) => {
             // eslint-disable-next-line react/jsx-no-bind
             onSubmit={onSubmit}
             autoComplete="off">
-            {neighborhoodData && userTypeData ? (
+            {userTypeData ? (
               buildForm()
             ) : (
               <p>Ocorreu um erro ao buscar dados na api</p>
