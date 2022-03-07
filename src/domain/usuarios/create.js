@@ -2,14 +2,13 @@ import {isEmpty, isNil} from 'lodash';
 import api from '../../services/api';
 
 export default async function create(token, newUser) {
-  const {username, email, name, password, neighborhood, userType} = newUser;
+  const {username, email, name, password, userType} = newUser;
 
   const objToSend = {
     user_name: username,
     email: isNil(email) || isEmpty(email) ? null : email,
     real_name: name,
     password,
-    bairro: neighborhood,
     user_type: userType,
   };
 
