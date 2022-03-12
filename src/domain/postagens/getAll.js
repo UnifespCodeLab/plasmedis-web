@@ -6,31 +6,24 @@ import api from '../../services/api';
 
 export default async function getAll(
   token,
-  {recommended = false, category = null, neighborhood = null} = {},
+  {recommended = null, category = null, neighborhood = null} = {},
 ) {
   if (isNil(token) || isEmpty(token))
     throw new Error('Token não foi informado');
 
-  let endpoint = `/${recommended ? 'recomendados' : 'postagens'}`;
+  const queryString = {};
+  if (recommended != null) queryString.recommended = recommended;
+  if (category != null) queryString.category = category;
 
-  if (category) {
-    endpoint += `/categorias/${category}`;
-  }
-
-  const posts = await api.get(
-    `${endpoint}${stringify({
-      bairro: neighborhood,
-    })}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+  const posts = await api.get(`posts${stringify(queryString)}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
     },
-  );
+  });
 
   if (!has(posts, 'data')) return null;
 
-  return get(posts, 'data.post', []).map((post) => ({
+  return get(posts, 'data.posts', []).map((post) => ({
     id: get(post, 'id'),
     title: get(post, 'titulo'),
     description: get(post, 'texto'),
@@ -38,17 +31,13 @@ export default async function getAll(
       id: get(post, 'categoria'),
       name: '<API NÃO ESTÁ ENVIANDO>',
     },
-    neighborhood: {
-      id: get(post, 'bairro'),
-      name: '<API NÃO ESTÁ ENVIANDO>',
-    },
     author: {
-      id: get(post, 'id_criador'),
-      name: get(post, 'criador'),
+      id: get(post, 'created.user'),
+      name: get(post, 'created.name'),
       avatar: '<API NÃO ESTÁ ENVIANDO>',
     },
-    dateTime: moment(`${get(post, 'data')}Z`),
+    dateTime: moment(`${get(post, 'created.date')}Z`),
     verified: get(post, 'selo'),
-    comments: get(post, 'comentarios', 0),
+    comments: get(post, 'comments_count', 0),
   }));
 }

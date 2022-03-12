@@ -32,12 +32,11 @@ function Entrar({history} = {}) {
 
           setUser({
             id: data.user.id,
-            username: data.user.user_name,
+            type: data.user.type ?? 3,
+            username: data.user.username,
             email: data.user.email,
-            name: data.user.real_name,
+            name: data.user.name,
             avatar: data.user.avatar ?? null,
-            userType: data.user.user_type ?? 3,
-            verified: data.user.verificado ?? false,
           });
 
           history.push({

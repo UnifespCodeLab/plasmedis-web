@@ -7,7 +7,7 @@ export default async function getAll(token) {
   if (isNil(token) || isEmpty(token))
     throw new Error('Token não foi informado');
 
-  const comentarios = await api.get('comentarios', {
+  const comentarios = await api.get('comments', {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -16,14 +16,14 @@ export default async function getAll(token) {
   if (!has(comentarios, 'data')) return null;
 
   return get(comentarios, 'data.comments', []).map((comentario) => ({
-    id: '<API NÃO ESTÁ ENVIANDO>',
+    id: get(comentario, 'id'),
     author: {
-      id: get(comentario, 'criador'),
-      name: '<API NÃO ESTÁ ENVIANDO>',
+      id: get(comentario, 'created.user'),
+      name: get(comentario, 'created.name'),
       avatar: '<API NÃO ESTÁ ENVIANDO>',
     },
     post: get(comentario, 'postagem'),
-    dateTime: moment(get(comentario, 'data')),
+    dateTime: moment(get(comentario, 'created.date')),
     body: get(comentario, 'texto'),
   }));
 }

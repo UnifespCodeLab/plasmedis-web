@@ -5,7 +5,7 @@ import {FormControl, FormLabel, Input, Select} from '@chakra-ui/react';
 
 import Textarea from '../Textarea';
 
-const EditablePostagem = ({value} = {}) => {
+const EditablePostagem = ({value, categories} = {}) => {
   return (
     value && (
       <div>
@@ -41,12 +41,16 @@ const EditablePostagem = ({value} = {}) => {
             onChange={(event) => {
               value.category = event.target.value;
             }}>
-            <option selected value={0}>
-              Sem Categoria
-            </option>
-            <option value={1}>Saúde</option>
-            <option value={2}>Trocas</option>
-            <option value={3}>Cultura e Lazer</option>
+            {categories.map((category) => {
+              return (
+                <option
+                  selected={category.id === 0}
+                  key={category.id}
+                  value={category.id}>
+                  {category.name}
+                </option>
+              );
+            })}
           </Select>
           {/* <FormHelperText>Título da sua postagem.</FormHelperText> */}
         </FormControl>

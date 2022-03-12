@@ -1,28 +1,48 @@
+import {get} from 'lodash';
+
 import React, {useContext, useState, useEffect} from 'react';
 import {Box, Table, Tr, Th, Td, Tbody, Thead, Select} from '@chakra-ui/react';
 import {useHistory} from 'react-router-dom';
 import * as S from './styles';
-import {getAll, inactivateById, activateById} from '../../../domain/usuarios';
+
+import {getAll, updateById} from '../../../domain/usuarios';
+import * as Privilegio from '../../../domain/privilegios';
+
 import {Context as AuthContext} from '../../../components/stores/Auth';
 
 const UserControl = () => {
   const {user, token} = useContext(AuthContext);
   const history = useHistory();
+
   const [users, setUsers] = useState(null);
+  const [typeData, setTypeData] = useState(null);
 
   useEffect(() => {
-    const getAllUsersFromApi = async () => {
-      const response = await getAll(token);
-      setUsers(response.users);
+    const fetch = async () => {
+      // eslint-disable-next-line no-shadow
+      const users = getAll(token);
+      const types = await Privilegio.getAll(token);
+
+      setTypeData(types);
+
+      const result = (await users).users;
+
+      // eslint-disable-next-line no-shadow
+      result.map((user) => {
+        user.typeName =
+          types.find((type) => type.id === user.type)?.type ?? '???';
+      });
+
+      setUsers(result);
     };
 
-    getAllUsersFromApi();
+    fetch();
   }, []);
 
   useEffect(() => {
     const canEditUsers = [1, 2];
 
-    if (!canEditUsers.includes(user.userType)) {
+    if (!canEditUsers.includes(user.type)) {
       history.push('/');
     }
   }, []);
@@ -30,11 +50,11 @@ const UserControl = () => {
   const updateUserStatus = async (target, userId) => {
     switch (target.value) {
       case 'ativar':
-        await activateById(token, userId);
+        await updateById(token, userId, {active: true});
         break;
 
       case 'inativar':
-        await inactivateById(token, userId);
+        await updateById(token, userId, {active: false});
         break;
 
       default:
@@ -67,21 +87,19 @@ const UserControl = () => {
               users.map((currentUser) => (
                 <Tr key={currentUser.id}>
                   <Td>{currentUser.id}</Td>
-                  <Td>{currentUser.user_name}</Td>
+                  <Td>{currentUser.username}</Td>
                   <Td>{currentUser.email}</Td>
-                  <Td>{currentUser.privilegio}</Td>
+                  <Td>{currentUser.typeName}</Td>
                   <Td>
                     <Select
                       onChange={(e) =>
                         updateUserStatus(e.target, currentUser.id)
                       }
                       size="sm">
-                      <option
-                        selected={!currentUser.is_active}
-                        value="inativar">
+                      <option selected={!currentUser.active} value="inativar">
                         Inativo
                       </option>
-                      <option selected={currentUser.is_active} value="ativar">
+                      <option selected={currentUser.active} value="ativar">
                         Ativo
                       </option>
                     </Select>

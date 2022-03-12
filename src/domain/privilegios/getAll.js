@@ -1,4 +1,4 @@
-import {isEmpty, isNil} from 'lodash';
+import {get, isEmpty, isNil} from 'lodash';
 import api from '../../services/api';
 
 export default async function getAll(token) {
@@ -6,12 +6,15 @@ export default async function getAll(token) {
     throw new Error('Token não foi informado');
 
   try {
-    const response = await api.get(`users`, {
+    const response = await api.get(`privileges`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    return response.data;
+    return get(response.data, 'privileges', []).map((privilege) => ({
+      id: get(privilege, 'id'),
+      type: get(privilege, 'name'),
+    }));
   } catch (e) {
     // eslint-disable-next-line no-alert
     alert('Erro ao encontar informações');

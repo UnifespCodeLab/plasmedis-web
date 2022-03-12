@@ -32,7 +32,7 @@ import * as Privilegio from '../../domain/privilegios';
 
 import {Context as AuthContext} from '../../components/stores/Auth';
 
-const RegisterUser = (...props) => {
+const Perfil = (...props) => {
   const {token} = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [typeData, setTypeData] = useState(null);
@@ -154,81 +154,6 @@ const RegisterUser = (...props) => {
   const buildForm = useCallback(() => {
     return (
       <>
-        <FormControl
-          mb={4}
-          isInvalid={!!errors.username}
-          errortext={errors?.username}
-          isRequired>
-          <FormLabel color="#000">Nome de Usuário</FormLabel>
-          <Input
-            color="#000"
-            {...register('username')}
-            placeholder="Username"
-          />
-
-          {checkingUsernameAvailability ? (
-            <FormHelperText
-              display="flex"
-              flexDirection="row"
-              alignItems="center">
-              <Spinner size="xs" colorScheme="primary" mr={2} />
-              Verificando disponibilidade do nome de usuário
-            </FormHelperText>
-          ) : (
-            <>
-              {!isNil(errors.username) && !isEmpty(errors.username) ? (
-                <FormErrorMessage>
-                  <Alert status="error">
-                    <AlertIcon />
-                    <AlertDescription>{errors.username}</AlertDescription>
-                  </Alert>
-                </FormErrorMessage>
-              ) : (
-                inputs.username === usernameChecked && (
-                  <FormHelperText color="green.700">
-                    <Alert status="success">
-                      <AlertIcon />
-                      <AlertDescription>
-                        Esse nome de usuário está disponível
-                      </AlertDescription>
-                    </Alert>
-                  </FormHelperText>
-                )
-              )}
-            </>
-          )}
-        </FormControl>
-
-        <FormControl
-          mb={4}
-          isInvalid={!!errors?.email}
-          errortext={errors?.email}>
-          <FormLabel color="#000">E-mail</FormLabel>
-          <Input
-            color="#000"
-            {...register('email')}
-            placeholder="E-mail"
-            type="email"
-          />
-          <FormErrorMessage>
-            <Alert status="error">
-              <AlertIcon />
-              <AlertDescription>{errors.email}</AlertDescription>
-            </Alert>
-          </FormErrorMessage>
-          {(isEmpty(inputs.email) || isNil(inputs.email)) && (
-            <FormHelperText color="yellow.700">
-              <Alert status="warning">
-                <AlertIcon />
-                <AlertDescription>
-                  Caso o usuário não possua um e-mail cadastrado, qualquer
-                  pedido de mudança de senha será encaminhado para a moderação
-                  da plataforma.
-                </AlertDescription>
-              </Alert>
-            </FormHelperText>
-          )}
-        </FormControl>
         <FormControl mb={4} isInvalid={!!errors?.name} errortext={errors?.name}>
           <FormLabel color="#000">Nome</FormLabel>
           <Input color="#000" {...register('name')} placeholder="Nome" />
@@ -240,87 +165,129 @@ const RegisterUser = (...props) => {
           </FormErrorMessage>
         </FormControl>
 
-        <FormControl
-          mb={4}
-          isInvalid={!!errors?.password}
-          errortext={errors?.password}>
-          <FormLabel color="#000">Senha</FormLabel>
-          <Input
-            color="#000"
-            {...register('password')}
-            type="password"
-            placeholder="Senha"
-          />
-          <FormErrorMessage>
-            <Alert status="error">
-              <AlertIcon />
-              <AlertDescription>{errors?.password}</AlertDescription>
-            </Alert>
-          </FormErrorMessage>
-        </FormControl>
+        <div style={{display: 'flex', flexDirection: 'row'}}>
+          <FormControl
+            mb={4}
+            mr={2}
+            isInvalid={!!errors.username}
+            errortext={errors?.username}
+            isRequired>
+            <FormLabel color="#000">Nome de Usuário</FormLabel>
+            <Input
+              color="#000"
+              {...register('username')}
+              placeholder="Username"
+            />
 
-        {/* <FormControl
-          mb={4}
-          isInvalid={!!errors?.neighborhood}
-          errortext={errors?.neighborhood}>
-          <FormLabel color="#000">Bairro</FormLabel>
-          <Select
-            color="#000"
-            spacing={4}
-            direction="row"
-            {...register('neighborhood', {
-              validateOn: 'onChange',
-              defaultValue: 'DEFAULT',
-            })}>
-            <option value="DEFAULT" disabled>
-              Selecione uma opção
-            </option>
-            {neighborhoodData
-              ? neighborhoodData.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                  </option>
-                ))
-              : null}
-          </Select>
+            {checkingUsernameAvailability ? (
+              <FormHelperText
+                display="flex"
+                flexDirection="row"
+                alignItems="center">
+                <Spinner size="xs" colorScheme="primary" mr={2} />
+                Verificando disponibilidade do nome de usuário
+              </FormHelperText>
+            ) : (
+              <>
+                {!isNil(errors.username) && !isEmpty(errors.username) ? (
+                  <FormErrorMessage>
+                    <Alert status="error">
+                      <AlertIcon />
+                      <AlertDescription>{errors.username}</AlertDescription>
+                    </Alert>
+                  </FormErrorMessage>
+                ) : (
+                  inputs.username === usernameChecked && (
+                    <FormHelperText color="green.700">
+                      <Alert status="success">
+                        <AlertIcon />
+                        <AlertDescription>
+                          Esse nome de usuário está disponível
+                        </AlertDescription>
+                      </Alert>
+                    </FormHelperText>
+                  )
+                )}
+              </>
+            )}
+          </FormControl>
 
-          <FormErrorMessage>
-            <Alert status="error">
-              <AlertIcon />
-              <AlertDescription>{errors?.neighborhood}</AlertDescription>
-            </Alert>
-          </FormErrorMessage>
-        </FormControl> */}
+          <FormControl
+            mb={4}
+            ml={2}
+            isInvalid={!!errors?.email}
+            errortext={errors?.email}>
+            <FormLabel color="#000">E-mail</FormLabel>
+            <Input
+              color="#000"
+              {...register('email')}
+              placeholder="E-mail"
+              type="email"
+            />
+            <FormErrorMessage>
+              <Alert status="error">
+                <AlertIcon />
+                <AlertDescription>{errors.email}</AlertDescription>
+              </Alert>
+            </FormErrorMessage>
+            {(isEmpty(inputs.email) || isNil(inputs.email)) && (
+              <FormHelperText color="yellow.700">
+                <Alert status="warning">
+                  <AlertIcon />
+                  <AlertDescription>
+                    Caso você não possua um e-mail cadastrado, qualquer pedido
+                    de mudança de senha será encaminhado para a moderação da
+                    plataforma.
+                  </AlertDescription>
+                </Alert>
+              </FormHelperText>
+            )}
+          </FormControl>
+        </div>
 
-        <FormControl mb={4} isInvalid={!!errors?.type} errortext={errors?.type}>
-          <FormLabel color="#000">Tipo</FormLabel>
-          <Select
-            color="#000"
-            spacing={4}
-            direction="row"
-            {...register('type', {
-              validateOn: 'onChange',
-              defaultValue: 'DEFAULT',
-            })}>
-            <option value="DEFAULT" disabled>
-              Selecione uma opção
-            </option>
-            {typeData
-              ? typeData.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.type}
-                  </option>
-                ))
-              : null}
-          </Select>
+        <div style={{display: 'flex', flexDirection: 'row'}}>
+          <FormControl
+            mb={4}
+            mr={2}
+            isInvalid={!!errors?.password}
+            errortext={errors?.password}>
+            <FormLabel color="#000">Senha</FormLabel>
+            <Input
+              color="#000"
+              {...register('password')}
+              type="password"
+              placeholder="Senha"
+            />
+            <FormErrorMessage>
+              <Alert status="error">
+                <AlertIcon />
+                <AlertDescription>{errors?.password}</AlertDescription>
+              </Alert>
+            </FormErrorMessage>
+          </FormControl>
 
-          <FormErrorMessage>
-            <Alert status="error">
-              <AlertIcon />
-              <AlertDescription>{errors?.type}</AlertDescription>
-            </Alert>
-          </FormErrorMessage>
-        </FormControl>
+          <FormControl
+            mb={4}
+            ml={2}
+            isInvalid={!!errors?.confirmation_password}
+            errortext={errors?.confirmation_password}>
+            <FormLabel color="#000">Confirmação de Senha</FormLabel>
+            <Input
+              color="#000"
+              {...register('confirmation_password')}
+              type="password"
+              placeholder="Confirmação de Senha"
+            />
+            <FormErrorMessage>
+              <Alert status="error">
+                <AlertIcon />
+                <AlertDescription>
+                  {errors?.confirmation_password}
+                </AlertDescription>
+              </Alert>
+            </FormErrorMessage>
+          </FormControl>
+        </div>
       </>
     );
   }, [
@@ -364,7 +331,7 @@ const RegisterUser = (...props) => {
   return (
     <S.Wrapper px={{base: 0, lg: 6}}>
       <Text color="#2f7384" fontSize="2xl" fontWeight={600} marginBottom={4}>
-        Cadastrar Novos Usuários
+        Meu Perfil
       </Text>
       <Box
         borderRadius={10}
@@ -407,8 +374,30 @@ const RegisterUser = (...props) => {
           </S.Form>
         </Stack>
       </Box>
+      <Box
+        mt={4}
+        borderRadius={10}
+        bg={{base: 'white', lg: 'white'}}
+        color={{base: 'white', lg: 'white'}}
+        boxShadow="0px 0.25rem 0.25rem 0px rgba(0, 0, 0, 0.25)">
+        <Stack
+          mx={12}
+          my={10}
+          spacing={4}
+          align="flex-start"
+          justify="center"
+          direction="column">
+          <Alert status="error">
+            <AlertIcon />
+            <AlertDescription color="red.700">
+              É necessário que você preencha o complemento de dados abaixo para
+              continuar usando a plataforma.
+            </AlertDescription>
+          </Alert>
+        </Stack>
+      </Box>
     </S.Wrapper>
   );
 };
 
-export default RegisterUser;
+export default Perfil;

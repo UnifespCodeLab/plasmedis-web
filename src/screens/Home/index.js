@@ -1,4 +1,10 @@
-import React, {useRef, useState, useEffect, useContext} from 'react';
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  useContext,
+  useCallback,
+} from 'react';
 import {useLocation, useHistory} from 'react-router-dom';
 
 import {
@@ -32,7 +38,6 @@ import {Wrapper} from './styles';
 
 import * as Postagens from '../../domain/postagens';
 import * as Categorias from '../../domain/categorias';
-import * as Bairros from '../../domain/bairros';
 import * as Comentarios from '../../domain/comentarios';
 
 function Home() {
@@ -42,97 +47,87 @@ function Home() {
 
   const filteredCategory = params.get('categoria');
 
-  const tabs = useBreakpointValue(
-    {
-      base: ['Feed', 'Recomendados', 'Saúde', 'Trocas', 'Cultura e Lazer'],
-      lg: ['Feed', 'Recomendados', 'Saúde', 'Trocas', 'Cultura e Lazer'],
-    },
-    'base',
-  );
+  const [tabs, setTabs] = useState(['Feed', 'Recomendados']);
 
   const [tab, setTab] = useState(0);
   const {isOpen, onOpen, onClose} = useDisclosure();
+  const [creatingPost, setCreatingPost] = useState(false);
   const {user, token} = useContext(AuthContext);
 
-  const categories = useRef(null);
-  const neighborhoods = useRef(null);
+  const [categories, setCategories] = useState([]);
 
   const [posts, setPosts] = useState(null);
-  const [newPostagem] = useState({});
+  const [newPostagem, setNewPostagem] = useState({});
 
   // 1 = Admin
   // 2 = Moderador
   const canVerifyPostTypeIds = [1, 2];
 
+  const fetchPosts = useCallback(async () => {
+    setPosts(null);
+
+    let index = tab;
+
+    if (filteredCategory) {
+      const selectedTabIndex = tabs.indexOf(filteredCategory);
+      if (selectedTabIndex !== -1) {
+        index = selectedTabIndex;
+        setTab(selectedTabIndex);
+      }
+    }
+
+    let result = [];
+    if (index === 0 || index === 1)
+      result = await Postagens.getAll(token, {
+        recommended: tab === 1 ? true : null,
+      });
+    else {
+      // FUTURE: como qualquer discussão de adição de novas categorias é pra próxima "sprint", no momento vai ficar meio hardcoded assim
+      result = await Postagens.getAll(token, {
+        category: categories.find((c) => c.name === tabs[index])?.id ?? null,
+      });
+    }
+
+    if (isNull(result)) return;
+
+    setPosts(
+      result.map((post) => {
+        // HACK: a api nao envia nome de categoria/bairro, então isso é um workaround
+
+        const category = categories.find((c) => c.id === post.category.id);
+        post.category.name = get(category, 'name', '—');
+
+        post.author.avatar = null;
+
+        return post;
+      }),
+    );
+  }, [tab, token]);
+
   useEffect(() => {
     // recuperando lista de categorias para tabs
-    categories.current = Categorias.getAll(token);
-  }, [token]);
 
-  useEffect(() => {
-    // HACK: a api nao envia nome de categoria/bairro, comentários vinculados à uma postagem OU avatar do autor, então isso é um workaround
-    neighborhoods.current = Bairros.getAll(token);
-  }, [token]);
-
-  useEffect(() => {
-    /**
-     * tab  0 -> FEED
-     *      1 -> RECOMENDADOS
-     */
-
-    const fetchPosts = async () => {
-      setPosts(null);
-
-      let index = tab;
-
-      if (filteredCategory) {
-        const selectedTabIndex = tabs.indexOf(filteredCategory);
-        if (selectedTabIndex !== -1) {
-          index = selectedTabIndex;
-          setTab(selectedTabIndex);
-        }
-      }
-
-      let result = [];
-      if (index === 0 || index === 1)
-        result = await Postagens.getAll(token, {recommended: tab === 1});
-      else {
-        // FUTURE: como qualquer discussão de adição de novas categorias é pra próxima "sprint", no momento vai ficar meio hardcoded assim
-        result = await Postagens.getAll(token, {
-          category:
-            (await categories.current).find((c) => c.name === tabs[index])
-              ?.id ?? null,
-        });
-      }
+    const fetchCategories = async () => {
+      const result = await Categorias.getAll(token);
 
       if (isNull(result)) return;
 
-      const [allCategories, allNeighborhoods] = await Promise.all([
-        categories.current,
-        neighborhoods.current,
-      ]);
-
-      setPosts(
-        result.map((post) => {
-          // HACK: a api nao envia nome de categoria/bairro, então isso é um workaround
-
-          const category = allCategories.find((c) => c.id === post.category.id);
-          post.category.name = get(category, 'name', '—');
-
-          const neighborhood = allNeighborhoods.find(
-            (b) => b.id === post.neighborhood.id,
-          );
-          post.neighborhood.name = get(neighborhood, 'name', '—');
-
-          post.author.avatar = null;
-
-          return post;
-        }),
+      setCategories(result);
+      setTabs(
+        ['Feed', 'Recomendados'].concat(
+          result
+            .filter((category) => category.id !== 0)
+            .map((category) => category.name),
+        ),
       );
     };
 
+    fetchCategories();
+  }, [token]);
+
+  useEffect(() => {
     fetchPosts();
-  }, [tab, token]);
+  }, [fetchPosts]);
 
   return (
     <>
@@ -151,8 +146,10 @@ function Home() {
           <TabList
             color={{base: 'light.300', lg: '#333'}}
             bg={{base: 'primary.600', lg: 'transparent'}}
+            px={{base: 2, lg: 0}}
+            pr={{base: 5, lg: 0}}
             maxWidth="100vw"
-            overflowX="scroll"
+            overflowX="auto"
             style={{
               scrollbarWidth: 'thin',
             }}>
@@ -215,8 +212,7 @@ function Home() {
 
         <Feed
           user={user}
-          avatar={get(user, 'avatar', null)}
-          canVerifyPost={canVerifyPostTypeIds.includes(user.userType)}
+          canVerifyPost={canVerifyPostTypeIds.includes(user.type)}
           fetchComments={async (id) => {
             const post = await Postagens.get(token, id);
             return post?.comments ?? [];
@@ -243,20 +239,29 @@ function Home() {
           <ModalHeader>Criar Postagem</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
-            <EditablePostagem value={newPostagem} />
+            <EditablePostagem value={newPostagem} categories={categories} />
           </ModalBody>
 
           <ModalFooter>
             <Button
               colorScheme="primary"
               mr={3}
+              disabled={creatingPost}
               onClick={() => {
-                Postagens.create(token, newPostagem, user.id);
+                setCreatingPost(true);
+                Postagens.create(token, newPostagem, user.id).then(() => {
+                  onClose();
+                  setCreatingPost(false);
+                  setNewPostagem({});
+                  fetchPosts();
+                });
               }}>
               {/* TODO: show success/message error */}
               Criar
             </Button>
-            <Button onClick={onClose}>Cancelar</Button>
+            <Button disabled={creatingPost} onClick={onClose}>
+              Cancelar
+            </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

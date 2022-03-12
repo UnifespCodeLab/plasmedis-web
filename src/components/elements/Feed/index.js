@@ -5,10 +5,11 @@ import {isNull} from 'lodash';
 import {Spinner, Box} from '@chakra-ui/react';
 import Postagem from '../Postagem';
 
+import * as User from '../../../domain/usuarios';
+
 const Feed = ({
   value,
   user,
-  avatar,
   canVerifyPost,
   fetchComments,
   onCreateComment,
@@ -29,7 +30,6 @@ const Feed = ({
           key={postagem?.id}
           item={postagem}
           user={user}
-          avatar={avatar}
           verifiable={canVerifyPost}
           fetchComments={fetchComments}
           onCreateComment={onCreateComment}
@@ -43,8 +43,7 @@ const Feed = ({
 Feed.displayName = 'Feed';
 Feed.defaultProps = {
   value: [],
-  user: '????',
-  avatar: 'https://bit.ly/dan-abramov',
+  user: User.PropTypes.UserDefault,
   canVerifyPost: false,
   fetchComments: async () => [],
   onCreateComment: () => {},
@@ -55,15 +54,14 @@ Feed.propTypes = {
     PropTypes.shape({
       title: PropTypes.string.isRequired,
       description: PropTypes.string.isRequired,
-      category: {
-        id: PropTypes.string.isRequired,
+      category: PropTypes.shape({
+        id: PropTypes.number.isRequired,
         name: PropTypes.string.isRequired,
-      },
+      }),
       dateTime: PropTypes.object.isRequired, // TODO: invoke moment object type
     }),
   ),
-  user: PropTypes.string,
-  avatar: PropTypes.string,
+  user: User.PropTypes.User,
   canVerifyPost: PropTypes.bool,
   fetchComments: PropTypes.func,
   onCreateComment: PropTypes.func,

@@ -1,4 +1,4 @@
-import React, {useContext, useState, useEffect} from 'react';
+import React, {useContext, useState, useEffect, useCallback} from 'react';
 import {useHistory, Link} from 'react-router-dom';
 
 import {Icon} from '@mdi/react';
@@ -26,7 +26,7 @@ function Categories() {
   useEffect(() => {
     const canEditCategoriesTypeIds = [1, 2];
 
-    if (!canEditCategoriesTypeIds.includes(user.userType)) {
+    if (!canEditCategoriesTypeIds.includes(user.type)) {
       history.push('/');
     }
   }, []);
@@ -39,6 +39,17 @@ function Categories() {
 
     fetchCategories();
   }, [token]);
+
+  const removeCategory = useCallback(
+    async (id) => {
+      try {
+        await Categorias.deleteById(token, id);
+      } catch (e) {
+        alert(e.message);
+      }
+    },
+    [token],
+  );
 
   return (
     <>
@@ -76,6 +87,7 @@ function Categories() {
                         aria-label="Deletar categoria"
                         title="Deletar categoria"
                         cursor="pointer"
+                        onClick={() => removeCategory(category.id)}
                         size={1}
                         icon={<Icon size={1} path={mdiDeleteOutline} />}
                         variant="ghost"

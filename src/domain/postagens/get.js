@@ -11,7 +11,7 @@ export default async function (token, id) {
   if (isNil(id) || (isEmpty(id) && isString(id)))
     throw new Error('Id da postagem não foi informado');
 
-  const post = await api.get(`/postagens/${id}`, {
+  const post = await api.get(`/posts/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -27,26 +27,22 @@ export default async function (token, id) {
       id: get(post, 'data.categoria'),
       name: '<API NÃO ESTÁ ENVIANDO>',
     },
-    neighborhood: {
-      id: '<API NÃO ESTÁ ENVIANDO>',
-      name: '<API NÃO ESTÁ ENVIANDO>',
-    },
     author: {
-      id: get(post, 'data.criador.id'),
-      name: get(post, 'data.criador.name'),
+      id: get(post, 'data.created.user'),
+      name: get(post, 'data.created.name'),
       avatar: '<API NÃO ESTÁ ENVIANDO>',
     },
-    dateTime: moment(`${get(post, 'data.data')}Z`),
+    dateTime: moment(`${get(post, 'data.created.date')}Z`),
     verified: get(post, 'data.selo'),
-    comments: get(post, 'data.comentarios', []).map((comentario) => ({
+    comments: get(post, 'data.comments', []).map((comentario) => ({
       id: comentario.id,
       author: {
-        id: get(comentario, 'criador.id'),
-        name: get(comentario, 'criador.name'),
+        id: get(comentario, 'created.user'),
+        name: get(comentario, 'created.name'),
         avatar: '<API NÃO ESTÁ ENVIANDO>',
       },
       post: get(comentario, 'postagem'),
-      dateTime: moment(`${get(comentario, 'data')}Z`),
+      dateTime: moment(`${get(comentario, 'created.date')}Z`),
       body: get(comentario, 'texto'),
     })),
   };

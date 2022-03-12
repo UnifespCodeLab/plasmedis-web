@@ -8,15 +8,10 @@ import {Context as AuthContext} from '../../stores/Auth';
 import {TextAnchor} from './styles.js';
 
 const Comentario = ({item} = {}) => {
-  debugger;
   const {user} = useContext(AuthContext);
 
   const checkIfIsAbleToDelete = () => {
-    if (
-      user.id === item.author.id ||
-      user.userType === 1 ||
-      user.userType === 2
-    ) {
+    if (user.id === item.author.id || user.type === 1 || user.type === 2) {
       return true;
     }
 
