@@ -7,7 +7,7 @@ export default async function addSelo(token, postagemId) {
 
   try {
     return api
-      .put(`selo/${postagemId}`, null, {
+      .put(`posts/${postagemId}/stamp`, null, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

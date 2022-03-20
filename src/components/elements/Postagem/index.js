@@ -22,6 +22,8 @@ import {MdSend, MdVerifiedUser} from 'react-icons/md';
 import {Button} from '@chakra-ui/button';
 import Icon from '@chakra-ui/icon';
 import {get} from 'lodash';
+
+import * as User from '../../../domain/usuarios';
 import {deleteById} from '../../../domain/postagens';
 
 import {TextAnchor, FiTrashIcon} from './styles';
@@ -33,7 +35,6 @@ import {Context as AuthContext} from '../../stores/Auth';
 const Postagem = ({
   item,
   user,
-  avatar,
   verifiable,
   fetchComments,
   onCreateComment,
@@ -72,11 +73,7 @@ const Postagem = ({
   );
 
   const checkIfUserCanDeletePost = () => {
-    if (
-      user.id === item.author.id ||
-      user.userType === 1 ||
-      user.userType === 2
-    ) {
+    if (user.id === item.author.id || user.type === 1 || user.type === 2) {
       return true;
     }
     return false;
@@ -202,7 +199,7 @@ const Postagem = ({
                   align="center"
                   mb={numberOfComments > 0 ? 8 : 0}>
                   <Box mr={{base: 2, lg: 4}}>
-                    <Avatar name={user.name} src={avatar} />
+                    <Avatar name={user.name} src={get(user, 'avatar', null)} />
                   </Box>
 
                   <Input
@@ -280,8 +277,7 @@ const Postagem = ({
 Postagem.displayName = 'Postagem';
 Postagem.defaultProps = {
   item: {},
-  user: '????',
-  avatar: 'https://bit.ly/dan-abramov',
+  user: User.PropTypes.UserDefault,
   verifiable: false,
   fetchComments: async () => [],
   onCreateComment: () => {},
@@ -296,16 +292,15 @@ Postagem.propTypes = {
     }),
     title: PropTypes.string.isRequired,
     description: PropTypes.string.isRequired,
-    category: {
-      id: PropTypes.string.isRequired,
+    category: PropTypes.shape({
+      id: PropTypes.number.isRequired,
       name: PropTypes.string.isRequired,
-    },
+    }),
     dateTime: PropTypes.object.isRequired, // TODO: invoke moment object type
-    comments: PropTypes.arrayOf(PropTypes.shape({})),
+    comments: PropTypes.number,
     verified: PropTypes.bool,
   }),
-  user: PropTypes.object,
-  avatar: PropTypes.string,
+  user: User.PropTypes.User,
   verifiable: PropTypes.bool,
   fetchComments: PropTypes.func,
   onCreateComment: PropTypes.func,

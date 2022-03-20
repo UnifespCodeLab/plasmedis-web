@@ -6,7 +6,7 @@ export default async function getAll(token) {
   if (isNil(token) || isEmpty(token))
     throw new Error('Token não foi informado');
 
-  const categorias = await api.get('categorias', {
+  const categorias = await api.get('categories', {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -14,9 +14,9 @@ export default async function getAll(token) {
 
   if (!has(categorias, 'data')) return null;
 
-  return get(categorias, 'data.Categorias', []).map((categoria) => ({
+  return get(categorias, 'data.categories', []).map((categoria) => ({
     id: get(categoria, 'id'),
-    name: get(categoria, 'nome'),
-    posts: get(categoria, 'postagens'),
+    name: get(categoria, 'name'),
+    posts: get(categoria, 'posts'),
   }));
 }

@@ -2,7 +2,7 @@ import api from '../services/api';
 
 export default function login({username, password} = {}) {
   return api.post(
-    `login?aud=${process.env.REACT_APP_ME ?? 'plasmedis-web-local'}`,
+    `auth/login?aud=${process.env.REACT_APP_ME ?? 'plasmedis-web-local'}`,
     {username, password},
   );
 }
@@ -12,7 +12,7 @@ export default function login({username, password} = {}) {
  */
 export async function get() {
   try {
-    const response = await api.get('login');
+    const response = await api.get('auth/login');
     return response.data ?? {};
   } catch {
     return null;

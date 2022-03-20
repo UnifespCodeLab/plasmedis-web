@@ -8,15 +8,15 @@ export default async function (token, id) {
     throw new Error('Token não foi informado');
 
   if (isNil(id) || (isEmpty(id) && isString(id)))
-    throw new Error('Id da postagem não foi informado');
+    throw new Error('Id da categoria não foi informado');
 
   try {
-    await api.delete(`/posts/${id}`, {
+    await api.delete(`/categories/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
   } catch (error) {
-    throw new Error('Não possivel excluir');
+    throw new Error('Não foi possivel excluir categoria');
   }
 }

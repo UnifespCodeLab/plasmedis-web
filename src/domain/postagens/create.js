@@ -9,21 +9,16 @@ export default async function create(token, newPostagem, currentUserId) {
 
   const objToSend = {
     texto: description,
-    criador: currentUserId,
     titulo: title,
     categoria: category || 0,
   };
 
   try {
-    await api
-      .post('postagens', objToSend, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((res) => {
-        window.location.reload();
-      });
+    await api.post('posts', objToSend, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
   } catch (e) {
     alert('Ocorreu um erro ao criar a postagem. Verifique com o administrador');
   }
