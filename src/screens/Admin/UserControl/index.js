@@ -1,3 +1,5 @@
+/* eslint-disable no-shadow */
+
 import {get} from 'lodash';
 import React, {useContext, useState, useEffect} from 'react';
 import {toast} from 'react-toastify';
@@ -34,7 +36,7 @@ const UserControl = () => {
   const history = useHistory();
 
   const [users, setUsers] = useState(null);
-  const [typeData, setTypeData] = useState(null);
+  const [typeData, setTypeData] = useState([]);
 
   const [emailFilter, setEmailFilter] = useState(null);
   const [usernameFilter, setUsernameFilter] = useState(null);
@@ -42,14 +44,19 @@ const UserControl = () => {
 
   useEffect(() => {
     const fetch = async () => {
-      // eslint-disable-next-line no-shadow
       const users = getAll(token);
       const types = await Privilegio.getAll(token);
 
       setTypeData(types);
 
       const result = (await users).users;
-      formatUsers(result);
+
+      result.map((user) => {
+        user.typeName =
+          types.find((type) => type.id === user.type)?.type ?? '???';
+      });
+
+      setUsers(result);
     };
 
     fetch();
@@ -78,15 +85,6 @@ const UserControl = () => {
     }
   };
 
-  const formatUsers = (listUsers) => {
-    const formattedUsers = listUsers.map((item) => ({
-      ...item,
-      typeName: typeData.find((type) => type.id === item.type)?.type ?? '???',
-    }));
-
-    setUsers(formattedUsers);
-  };
-
   const filterUsers = async () => {
     setLoading(true);
     try {
@@ -96,7 +94,14 @@ const UserControl = () => {
         usernameFilter,
       );
 
-      formatUsers(result.users);
+      const {users} = result;
+
+      users.map((user) => {
+        user.typeName =
+          typeData.find((type) => type.id === user.type)?.type ?? '???';
+      });
+
+      setUsers(users);
     } catch (error) {
       toast.error('Erro ao pesquisar usuários');
       console.log(error);
