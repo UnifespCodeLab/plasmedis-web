@@ -1,13 +1,34 @@
-import {get} from 'lodash';
+/* eslint-disable no-shadow */
 
+import {get} from 'lodash';
 import React, {useContext, useState, useEffect} from 'react';
-import {Box, Table, Tr, Th, Td, Tbody, Thead, Select} from '@chakra-ui/react';
+import {toast} from 'react-toastify';
+
+import {
+  Box,
+  Button,
+  Input,
+  InputGroup,
+  Table,
+  Tr,
+  Th,
+  Td,
+  Tbody,
+  Thead,
+  Select,
+} from '@chakra-ui/react';
+
+import {Flex} from '@chakra-ui/layout';
 import {useHistory} from 'react-router-dom';
 import * as S from './styles';
 
-import {getAll, updateById} from '../../../domain/usuarios';
-import * as Privilegio from '../../../domain/privilegios';
+import {
+  getAll,
+  getByEmailOrUsername,
+  updateById,
+} from '../../../domain/usuarios';
 
+import * as Privilegio from '../../../domain/privilegios';
 import {Context as AuthContext} from '../../../components/stores/Auth';
 
 const UserControl = () => {
@@ -15,11 +36,14 @@ const UserControl = () => {
   const history = useHistory();
 
   const [users, setUsers] = useState(null);
-  const [typeData, setTypeData] = useState(null);
+  const [typeData, setTypeData] = useState([]);
+
+  const [emailFilter, setEmailFilter] = useState(null);
+  const [usernameFilter, setUsernameFilter] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetch = async () => {
-      // eslint-disable-next-line no-shadow
       const users = getAll(token);
       const types = await Privilegio.getAll(token);
 
@@ -27,7 +51,6 @@ const UserControl = () => {
 
       const result = (await users).users;
 
-      // eslint-disable-next-line no-shadow
       result.map((user) => {
         user.typeName =
           types.find((type) => type.id === user.type)?.type ?? '???';
@@ -62,11 +85,75 @@ const UserControl = () => {
     }
   };
 
+  const filterUsers = async () => {
+    setLoading(true);
+    try {
+      const result = await getByEmailOrUsername(
+        token,
+        emailFilter,
+        usernameFilter,
+      );
+
+      const {users} = result;
+
+      users.map((user) => {
+        user.typeName =
+          typeData.find((type) => type.id === user.type)?.type ?? '???';
+      });
+
+      setUsers(users);
+    } catch (error) {
+      toast.error('Erro ao pesquisar usuários');
+      console.log(error);
+    }
+
+    setLoading(false);
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      filterUsers();
+    }
+  };
+
   return (
     <S.Wrapper px={{base: 0, lg: 4}}>
       <S.Text color="#2f7384" fontSize="2xl" fontWeight={600} marginBottom={4}>
         Controle de usuários
       </S.Text>
+
+      <Flex direction="row" mb={4} alignItems="center">
+        <Input
+          color="#000"
+          type="text"
+          width="50%"
+          mr={4}
+          placeholder="Filtrar por email"
+          value={emailFilter}
+          onInput={(event) => setEmailFilter(event.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+        <S.Text color="#2f7384" mr={4}>
+          e/ou
+        </S.Text>
+        <Input
+          color="#000"
+          type="text"
+          width="50%"
+          mr={4}
+          placeholder="Filtrar pelo nome de usuário"
+          value={usernameFilter}
+          onInput={(event) => setUsernameFilter(event.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+        <Button
+          colorScheme="primary"
+          isLoading={loading}
+          onClick={() => filterUsers()}>
+          Pesquisar
+        </Button>
+      </Flex>
+
       <Box
         borderRadius={10}
         bg={{base: 'white', lg: 'white'}}
