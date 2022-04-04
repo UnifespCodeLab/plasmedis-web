@@ -11,6 +11,7 @@ import {
   Box,
   Stack,
   Input,
+  Checkbox,
   FormControl,
   FormLabel,
   FormErrorMessage,
@@ -22,8 +23,14 @@ import {
   AlertDescription,
   Spinner,
   Tooltip,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
 } from '@chakra-ui/react';
-import {debounce, isEmpty, isNil} from 'lodash';
+
+import {debounce, get, isEmpty, isNil, set, toPath} from 'lodash';
 import * as Yup from 'yup';
 
 import * as S from './styles';
@@ -31,11 +38,15 @@ import * as Usuario from '../../domain/usuarios';
 import * as Privilegio from '../../domain/privilegios';
 
 import {Context as AuthContext} from '../../components/stores/Auth';
+import DatePicker from '../../components/elements/DatePicker';
+import Form from '../../components/elements/Form';
+import decodeDate from '../../utils/decodeDate';
 
 const Perfil = (...props) => {
-  const {token} = useContext(AuthContext);
+  const {token, hasData, user} = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [typeData, setTypeData] = useState(null);
+  const [userData, setUserData] = useState(null);
 
   const [checkingUsernameAvailability, setCheckingUsernameAvailability] =
     useState(false);
@@ -43,6 +54,27 @@ const Perfil = (...props) => {
   const latestCheckUniqueUsername = useRef(null);
 
   const schema = useMemo(() => {
+    return Yup.object().shape({
+      name: Yup.string().required('O campo "Nome" é obrigatório'),
+      genero: Yup.string().required('O campo "Gênero" é obrigatório'),
+      nascimento: Yup.date().required(
+        'O campo "Data de Nascimento" é obrigatório',
+      ),
+      instituicao: Yup.string().required('O campo "Instituição" é obrigatório'),
+      campus: Yup.string().required('O campo "Campus" é obrigatório'),
+      setor: Yup.string().required('O campo "Setor" é obrigatório'),
+      deficiencia: Yup.bool().required(
+        'O campo "Possui Deficiência" é obrigatório',
+      ),
+      parente_com_tea: Yup.string(),
+      freq_convivio_tea: Yup.string(),
+      qtd_alunos_tea: Yup.number(),
+      tempo_trabalho_tea: Yup.number(),
+      qtd_pacientes_tea_ano: Yup.number(),
+    });
+  }, []);
+
+  const credentialSchema = useMemo(() => {
     return Yup.object().shape({
       username: Yup.string()
         .required('O Nome de Usuário é obrigatório')
@@ -81,7 +113,8 @@ const Perfil = (...props) => {
       email: Yup.string().email('Insira um e-mail válido'),
       name: Yup.string().required('O Nome é obrigatório'),
       password: Yup.string().required('A Senha é obrigatória'),
-      type: Yup.number().required('O Tipo é obrigatório'),
+      // type: Yup.number().required('O Tipo é obrigatório'),
+      data: Yup.object(),
     });
   }, [token]);
 
@@ -95,229 +128,323 @@ const Perfil = (...props) => {
     },
     [setErrors, errors],
   );
+  const [credentialErrors, setCredentialErrors] = useState({});
+  const setCredentialError = useCallback(
+    (name, value) => {
+      if (
+        value === credentialErrors[name] ||
+        (isNil(value) && isNil(credentialErrors[name]))
+      )
+        return;
+      setCredentialErrors({...credentialErrors, [name]: value});
+    },
+    [setCredentialErrors, credentialErrors],
+  );
 
-  const [inputs, setInputs] = useState({});
+  const [inputs, setInputs] = useState(null);
   const setInput = useCallback(
     (name, value) => {
-      setInputs({...inputs, [name]: value});
+      setInputs(set({...inputs}, name, value));
     },
     [setInputs, inputs],
   );
 
-  const register = useCallback(
-    (name, {validateOn = 'onBlur', defaultValue = ''} = {}) => {
-      const handleValidation = debounce(async (event) => {
-        const {value} = event.target;
-
-        try {
-          await schema.validateAt(name, {[name]: value});
-          setError(name, null);
-        } catch (error) {
-          setError(name, error.message);
-        }
-      }, 500);
-
-      const inputProps = {
-        value: inputs[name] ?? defaultValue,
-        onChange: (event) => {
-          setInput(name, event.target.value);
+  const form = useMemo(
+    () => [
+      {
+        name: 'name',
+        path: 'name',
+        label: 'Nome',
+        type: 'text',
+        required: false,
+      },
+      {
+        name: 'genero',
+        path: 'data.genero',
+        label: 'Gênero',
+        type: 'radio',
+        required: false,
+        custom: true,
+        options: [
+          {
+            value: 'Feminino',
+            text: 'Feminino',
+          },
+          {
+            value: 'Masculino',
+            text: 'Masculino',
+          },
+          {
+            value: 'Outro',
+            text: 'Outro',
+            custom: true,
+          },
+        ],
+      },
+      {
+        name: 'nascimento',
+        path: 'data.nascimento',
+        label: 'Data de Nascimento',
+        type: 'date',
+        required: false,
+      },
+      {
+        name: 'instituicao',
+        path: 'data.instituicao',
+        label: 'Instituição',
+        type: 'text',
+        required: false,
+      },
+      [
+        {
+          name: 'campus',
+          path: 'data.campus',
+          label: 'Campus',
+          type: 'text',
+          required: false,
         },
-      };
+        {
+          name: 'setor',
+          path: 'data.setor',
+          label: 'Setor',
+          type: 'text',
+          required: false,
+        },
+      ],
+      [
+        {
+          name: 'deficiencia',
+          path: 'data.deficiencia',
+          label: 'Possui Deficiência',
+          type: 'check',
+          required: false,
+        },
+        {
+          name: 'parente_com_tea',
+          path: 'data.parente_com_tea',
+          label: 'Convive com Parente com TEA',
+          type: 'check',
+          required: false,
+        },
+      ],
+      [
+        {
+          name: 'freq_convivio_tea',
+          path: 'data.freq_convivio_tea',
+          label: 'Frequência de Convívio TEA',
+          type: 'text',
+          required: false,
+        },
+        {
+          name: 'qtd_alunos_tea',
+          path: 'data.qtd_alunos_tea',
+          label: 'Quantidade de Alunos TEA',
+          type: 'numeric',
+          required: false,
+        },
+      ],
+      [
+        {
+          name: 'tempo_trabalho_tea',
+          path: 'data.tempo_trabalho_tea',
+          label: 'Tempo de Trabalho TEA',
+          type: 'numeric',
+          required: false,
+        },
+        {
+          name: 'qtd_pacientes_tea_ano',
+          path: 'data.qtd_pacientes_tea_ano',
+          label: 'Quantidade de Pacientes TEA/Ano',
+          type: 'numeric',
+          required: false,
+        },
+      ],
+    ],
+    [],
+  );
 
-      if (validateOn === 'onBlur') inputProps.onBlur = handleValidation;
-      else if (validateOn === 'onChange')
-        inputProps.onChange = (event) => {
-          setInput(name, event.target.value);
-          handleValidation(event);
-        };
+  const credentialForm = useMemo(
+    () => [
+      [
+        {
+          name: 'username',
+          path: 'username',
+          type: 'text',
+          label: 'Nome de Usuário',
+          helperText: checkingUsernameAvailability ? (
+            <FormHelperText
+              display="flex"
+              flexDirection="row"
+              alignItems="center">
+              <Spinner size="xs" colorScheme="primary" mr={2} />
+              Verificando disponibilidade do nome de usuário
+            </FormHelperText>
+          ) : inputs?.username === usernameChecked ? (
+            <FormHelperText color="green.700">
+              <Alert status="success">
+                <AlertIcon />
+                <AlertDescription>
+                  Esse nome de usuário está disponível
+                </AlertDescription>
+              </Alert>
+            </FormHelperText>
+          ) : null,
+        },
+        {
+          name: 'email',
+          path: 'email',
+          type: 'email',
+          label: 'E-mail',
+          helperStatus: 'warning',
+          helperText:
+            'Caso você não possua um e-mail cadastrado, qualquer pedido de mudança de senha será encaminhado para a moderação da plataforma.',
+        },
+      ],
+      [
+        {
+          name: 'password',
+          path: 'password',
+          type: 'password',
+          label: 'Senha',
+        },
+        {
+          name: 'confirmation_password',
+          path: 'confirmation_password',
+          type: 'password',
+          label: 'Confirmação de Senha',
+        },
+      ],
+    ],
+    [checkingUsernameAvailability, inputs, usernameChecked],
+  );
 
-      return inputProps;
+  const handleChange = useCallback(
+    (name, value, event, input) => setInput(input.path, value),
+    [setInput],
+  );
+
+  const handleValidate = useCallback(
+    (preffix, _schema, _setError) => async (name, value, event, input) => {
+      const prefixedName = preffix ? `${preffix}.${name}` : name;
+      try {
+        await _schema.validateAt(name, {[name]: value});
+        _setError(prefixedName, null);
+      } catch (error) {
+        _setError(prefixedName, error.message);
+      }
     },
-    [schema, inputs, setInput, setError],
+    [],
   );
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(async () => {
     if (isNil(token) || isEmpty(token)) return;
+
+    if (!hasData)
+      alert(
+        'Você deve terminar de preencher seu perfil para continuar usando a plataforma.',
+      );
+
     setLoading(true);
 
     const fetchPrivileges = async () => {
       const result = await Privilegio.getAll(token);
 
       setTypeData(result);
+    };
+
+    const fetchUserData = async () => {
+      const result = await Usuario.getById(token, user.id, true);
+
+      setUserData(result);
+
+      let nascimento = get(result, 'data.nascimento');
+      nascimento = nascimento ? decodeDate(nascimento) : nascimento;
+
+      setInputs({
+        name: get(result, 'name'),
+        data: {
+          genero: get(result, 'data.genero'),
+          nascimento: Date.now(),
+          instituicao: get(result, 'data.instituicao'),
+          campus: get(result, 'data.campus'),
+          setor: get(result, 'data.setor'),
+          deficiencia: get(result, 'data.deficiencia'),
+          parente_com_tea: get(result, 'data.parente_com_tea'),
+          freq_convivio_tea: get(result, 'data.freq_convivio_tea'),
+          qtd_alunos_tea: get(result, 'data.qtd_alunos_tea'),
+          tempo_trabalho_tea: get(result, 'data.tempo_trabalho_tea'),
+          qtd_pacientes_tea_ano: get(result, 'data.qtd_pacientes_tea_ano'),
+        },
+
+        username: get(result, 'username'),
+        email: get(result, 'email'),
+      });
+
       setLoading(false);
     };
 
     fetchPrivileges();
-  }, [token, setLoading]);
-
-  const buildForm = useCallback(() => {
-    return (
-      <>
-        <FormControl mb={4} isInvalid={!!errors?.name} errortext={errors?.name}>
-          <FormLabel color="#000">Nome</FormLabel>
-          <Input color="#000" {...register('name')} placeholder="Nome" />
-          <FormErrorMessage>
-            <Alert status="error">
-              <AlertIcon />
-              <AlertDescription>{errors?.name}</AlertDescription>
-            </Alert>
-          </FormErrorMessage>
-        </FormControl>
-
-        <div style={{display: 'flex', flexDirection: 'row'}}>
-          <FormControl
-            mb={4}
-            mr={2}
-            isInvalid={!!errors.username}
-            errortext={errors?.username}
-            isRequired>
-            <FormLabel color="#000">Nome de Usuário</FormLabel>
-            <Input
-              color="#000"
-              {...register('username')}
-              placeholder="Username"
-            />
-
-            {checkingUsernameAvailability ? (
-              <FormHelperText
-                display="flex"
-                flexDirection="row"
-                alignItems="center">
-                <Spinner size="xs" colorScheme="primary" mr={2} />
-                Verificando disponibilidade do nome de usuário
-              </FormHelperText>
-            ) : (
-              <>
-                {!isNil(errors.username) && !isEmpty(errors.username) ? (
-                  <FormErrorMessage>
-                    <Alert status="error">
-                      <AlertIcon />
-                      <AlertDescription>{errors.username}</AlertDescription>
-                    </Alert>
-                  </FormErrorMessage>
-                ) : (
-                  inputs.username === usernameChecked && (
-                    <FormHelperText color="green.700">
-                      <Alert status="success">
-                        <AlertIcon />
-                        <AlertDescription>
-                          Esse nome de usuário está disponível
-                        </AlertDescription>
-                      </Alert>
-                    </FormHelperText>
-                  )
-                )}
-              </>
-            )}
-          </FormControl>
-
-          <FormControl
-            mb={4}
-            ml={2}
-            isInvalid={!!errors?.email}
-            errortext={errors?.email}>
-            <FormLabel color="#000">E-mail</FormLabel>
-            <Input
-              color="#000"
-              {...register('email')}
-              placeholder="E-mail"
-              type="email"
-            />
-            <FormErrorMessage>
-              <Alert status="error">
-                <AlertIcon />
-                <AlertDescription>{errors.email}</AlertDescription>
-              </Alert>
-            </FormErrorMessage>
-            {(isEmpty(inputs.email) || isNil(inputs.email)) && (
-              <FormHelperText color="yellow.700">
-                <Alert status="warning">
-                  <AlertIcon />
-                  <AlertDescription>
-                    Caso você não possua um e-mail cadastrado, qualquer pedido
-                    de mudança de senha será encaminhado para a moderação da
-                    plataforma.
-                  </AlertDescription>
-                </Alert>
-              </FormHelperText>
-            )}
-          </FormControl>
-        </div>
-
-        <div style={{display: 'flex', flexDirection: 'row'}}>
-          <FormControl
-            mb={4}
-            mr={2}
-            isInvalid={!!errors?.password}
-            errortext={errors?.password}>
-            <FormLabel color="#000">Senha</FormLabel>
-            <Input
-              color="#000"
-              {...register('password')}
-              type="password"
-              placeholder="Senha"
-            />
-            <FormErrorMessage>
-              <Alert status="error">
-                <AlertIcon />
-                <AlertDescription>{errors?.password}</AlertDescription>
-              </Alert>
-            </FormErrorMessage>
-          </FormControl>
-
-          <FormControl
-            mb={4}
-            ml={2}
-            isInvalid={!!errors?.confirmation_password}
-            errortext={errors?.confirmation_password}>
-            <FormLabel color="#000">Confirmação de Senha</FormLabel>
-            <Input
-              color="#000"
-              {...register('confirmation_password')}
-              type="password"
-              placeholder="Confirmação de Senha"
-            />
-            <FormErrorMessage>
-              <Alert status="error">
-                <AlertIcon />
-                <AlertDescription>
-                  {errors?.confirmation_password}
-                </AlertDescription>
-              </Alert>
-            </FormErrorMessage>
-          </FormControl>
-        </div>
-      </>
-    );
+    fetchUserData();
   }, [
-    register,
-    inputs,
-    errors,
-    checkingUsernameAvailability,
-    usernameChecked,
-    typeData,
-    // neighborhoodData,
+    token,
+    setLoading,
+    setTypeData,
+    setUserData,
+    hasData,
+    user.id,
+    setInputs,
   ]);
 
   const onSubmit = useCallback(
     (event) => {
       event.preventDefault();
 
-      schema
-        .validate(inputs, {abortEarly: false})
-        .then((value) => {
-          Usuario.create(token, value)
-            .then(() => {
-              setErrors({});
-              setInputs({});
+      let validationPromise = Promise.resolve({});
+      if (inputs.username !== user.username || inputs.email !== user.email) {
+        validationPromise = credentialSchema.validate(inputs, {
+          abortEarly: false,
+        });
+      }
+
+      validationPromise
+        .then((credentials) => {
+          schema
+            .validate(
+              {...(inputs?.data || {}), name: inputs.name},
+              {abortEarly: false},
+            )
+            .then((data) => {
+              const {name} = data;
+              delete data.name;
+
+              Usuario.updateById(token, user.id, {
+                name,
+                data,
+                ...credentials,
+              })
+                .then(() => {
+                  setErrors({});
+                  setCredentialErrors({});
+                })
+                .catch(() => {
+                  alert('Não foi possível atualizar o perfil.'); // TODO: alert mais amigável com melhor descricao do erro
+                });
             })
-            .catch(() => {
-              alert('Não foi possível criar o usuário.'); // TODO: alert mais amigável com melhor descricao do erro
+            .catch((err) => {
+              setErrors(
+                err.inner.reduce(
+                  (obj, error) => ({
+                    ...obj,
+                    [`data.${error.path}`]: error.message,
+                  }),
+                  {},
+                ),
+              );
             });
         })
         .catch((err) => {
-          setErrors(
+          setCredentialErrors(
             err.inner.reduce(
               (obj, error) => ({...obj, [error.path]: error.message}),
               {},
@@ -325,9 +452,10 @@ const Perfil = (...props) => {
           );
         });
     },
-    [token, schema, inputs, setErrors, setInputs],
+    [inputs, user, credentialSchema, schema, token],
   );
 
+  console.log('perfil', inputs);
   return (
     <S.Wrapper px={{base: 0, lg: 6}}>
       <Text color="#2f7384" fontSize="2xl" fontWeight={600} marginBottom={4}>
@@ -339,8 +467,23 @@ const Perfil = (...props) => {
         color={{base: 'white', lg: 'white'}}
         boxShadow="0px 0.25rem 0.25rem 0px rgba(0, 0, 0, 0.25)">
         <Stack
-          mx={12}
-          my={10}
+          mx={6}
+          my={5}
+          spacing={4}
+          align="flex-start"
+          justify="center"
+          direction="row">
+          <Alert status="error">
+            <AlertIcon />
+            <AlertDescription color="red.700">
+              É necessário que você preencha o complemento de dados abaixo para
+              continuar usando a plataforma.
+            </AlertDescription>
+          </Alert>
+        </Stack>
+        <Stack
+          mx={5}
+          my={5}
           spacing={4}
           align="flex-start"
           justify="center"
@@ -350,7 +493,53 @@ const Perfil = (...props) => {
             onSubmit={onSubmit}
             autoComplete="off">
             {typeData ? (
-              buildForm()
+              <>
+                <Box
+                  borderWidth="1px"
+                  borderRadius="lg"
+                  overflow="hidden"
+                  py={5}
+                  px={6}
+                  mb={5}>
+                  <Form
+                    inputs={form}
+                    errors={errors}
+                    value={inputs}
+                    onChange={handleChange}
+                    onValidate={handleValidate('data', schema, setError)}
+                    spacing={5}
+                    noSubmit
+                  />
+                </Box>
+                <Box
+                  borderWidth="1px"
+                  borderRadius="lg"
+                  overflow="hidden"
+                  py={5}
+                  px={6}
+                  mb={5}>
+                  <Alert status="info" mb={4}>
+                    <AlertIcon />
+                    <AlertDescription color="blue.700">
+                      Para alteral qualquer informação abaixo será necessário
+                      informar e confirmar a senha.
+                    </AlertDescription>
+                  </Alert>
+                  <Form
+                    inputs={credentialForm}
+                    errors={credentialErrors}
+                    value={inputs}
+                    onChange={handleChange}
+                    onValidate={handleValidate(
+                      undefined,
+                      credentialSchema,
+                      setCredentialError,
+                    )}
+                    spacing={5}
+                    noSubmit
+                  />
+                </Box>
+              </>
             ) : !loading ? (
               <p style={{color: 'black', marginBottom: '1rem'}}>
                 <i>Ocorreu um erro ao buscar dados na api</i>
@@ -367,33 +556,11 @@ const Perfil = (...props) => {
                   colorScheme="primary"
                   type="submit"
                   isLoading={loading}>
-                  Cadastrar
+                  Salvar
                 </Button>
               </span>
             </Tooltip>
           </S.Form>
-        </Stack>
-      </Box>
-      <Box
-        mt={4}
-        borderRadius={10}
-        bg={{base: 'white', lg: 'white'}}
-        color={{base: 'white', lg: 'white'}}
-        boxShadow="0px 0.25rem 0.25rem 0px rgba(0, 0, 0, 0.25)">
-        <Stack
-          mx={12}
-          my={10}
-          spacing={4}
-          align="flex-start"
-          justify="center"
-          direction="column">
-          <Alert status="error">
-            <AlertIcon />
-            <AlertDescription color="red.700">
-              É necessário que você preencha o complemento de dados abaixo para
-              continuar usando a plataforma.
-            </AlertDescription>
-          </Alert>
         </Stack>
       </Box>
     </S.Wrapper>
