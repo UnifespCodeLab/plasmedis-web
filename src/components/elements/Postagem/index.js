@@ -18,6 +18,7 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import {MdSend, MdVerifiedUser} from 'react-icons/md';
+import ReactHtmlParser from 'react-html-parser';
 
 import {Button} from '@chakra-ui/button';
 import Icon from '@chakra-ui/icon';
@@ -175,7 +176,7 @@ const Postagem = ({
             </Flex>
             <TextAnchor size="sm" color="black" align="justify">
               <Anchorme target="_blank" rel="noreferrer noopener">
-                {item.description}
+                {ReactHtmlParser(item.description)}
               </Anchorme>
             </TextAnchor>
             <Text

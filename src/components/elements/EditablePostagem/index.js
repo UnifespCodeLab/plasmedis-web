@@ -2,6 +2,8 @@ import React, {useRef, useState} from 'react';
 import PropTypes from 'prop-types';
 
 import {FormControl, FormLabel, Input, Select} from '@chakra-ui/react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 import Textarea from '../Textarea';
 
@@ -23,11 +25,11 @@ const EditablePostagem = ({value, categories} = {}) => {
         </FormControl>
         <FormControl id="description">
           <FormLabel>Descrição</FormLabel>
-          <Textarea
-            colorScheme="primary"
-            value={value.description}
-            onChange={(event) => {
-              value.description = event.target.value;
+          <ReactQuill
+            theme="snow"
+            value={value}
+            onChange={(newValue) => {
+              value.description = newValue;
             }}
           />
           {/* <FormHelperText>Título da sua postagem.</FormHelperText> */}
