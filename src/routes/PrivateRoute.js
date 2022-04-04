@@ -7,16 +7,20 @@ import Default from '../components/layouts/default';
 import {Context as AuthContext} from '../components/stores/Auth';
 
 const PrivateRoute = ({component: Component, ...rest}) => {
-  const {token} = useContext(AuthContext);
+  const {token, hasData} = useContext(AuthContext);
 
   return (
     <Route
       {...rest}
       render={() =>
         token ? (
-          <Default>
-            <Component {...rest} />
-          </Default>
+          hasData ? (
+            <Default>
+              <Component {...rest} />
+            </Default>
+          ) : (
+            <Redirect to="/perfil" />
+          )
         ) : (
           <Redirect to="/entrar" />
         )

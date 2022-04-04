@@ -1,12 +1,16 @@
 import {isEmpty, isNil} from 'lodash';
 import api from '../../services/api';
+import stringify from '../../utils/stringify';
 
-export default async function getById(token, userId) {
+export default async function getById(token, userId, withData = false) {
   if (isNil(token) || isEmpty(token))
     throw new Error('Token não foi informado');
 
+  const queryString = {};
+  if (withData) queryString.with_data = true;
+
   try {
-    const response = await api.get(`users/${userId}`, {
+    const response = await api.get(`users/${userId}${stringify(queryString)}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
