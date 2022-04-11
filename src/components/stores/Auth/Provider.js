@@ -88,10 +88,20 @@ const Provider = ({children} = {}) => {
       user,
       setUser,
       hasData,
+      setHasData,
       hasAcceptedTerms,
       acceptTerms,
     }),
-    [token, setToken, user, setUser, hasData, hasAcceptedTerms, acceptTerms],
+    [
+      token,
+      setToken,
+      user,
+      setUser,
+      hasData,
+      setHasData,
+      hasAcceptedTerms,
+      acceptTerms,
+    ],
   );
 
   return <Context.Provider value={memoizedValue}>{children}</Context.Provider>;

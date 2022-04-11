@@ -30,8 +30,9 @@ import {
   NumberDecrementStepper,
 } from '@chakra-ui/react';
 
-import {debounce, get, isEmpty, isNil, set, toPath} from 'lodash';
+import {debounce, get, isEmpty, isNil, omit, pick, set, toPath} from 'lodash';
 import * as Yup from 'yup';
+import moment from 'moment';
 
 import * as S from './styles';
 import * as Usuario from '../../domain/usuarios';
@@ -40,18 +41,18 @@ import * as Privilegio from '../../domain/privilegios';
 import {Context as AuthContext} from '../../components/stores/Auth';
 import DatePicker from '../../components/elements/DatePicker';
 import Form from '../../components/elements/Form';
-import decodeDate from '../../utils/decodeDate';
 
 const Perfil = (...props) => {
-  const {token, hasData, user} = useContext(AuthContext);
+  const {token, hasData, setHasData, user} = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [typeData, setTypeData] = useState(null);
-  const [userData, setUserData] = useState(null);
 
   const [checkingUsernameAvailability, setCheckingUsernameAvailability] =
     useState(false);
   const [usernameChecked, setUsernamedChecked] = useState(null);
   const latestCheckUniqueUsername = useRef(null);
+
+  const savedCredentials = useRef({});
 
   const schema = useMemo(() => {
     return Yup.object().shape({
@@ -60,12 +61,13 @@ const Perfil = (...props) => {
       nascimento: Yup.date().required(
         'O campo "Data de Nascimento" é obrigatório',
       ),
-      instituicao: Yup.string().required('O campo "Instituição" é obrigatório'),
-      campus: Yup.string().required('O campo "Campus" é obrigatório'),
-      setor: Yup.string().required('O campo "Setor" é obrigatório'),
-      deficiencia: Yup.bool().required(
-        'O campo "Possui Deficiência" é obrigatório',
+      area_atuacao: Yup.string().required(
+        'O campo "Área de Atuação" é obrigatório',
       ),
+      instituicao: Yup.string().required('O campo "Instituição" é obrigatório'),
+      campus: Yup.string(),
+      setor: Yup.string(),
+      deficiencia: Yup.bool(),
       parente_com_tea: Yup.string(),
       freq_convivio_tea: Yup.string(),
       qtd_alunos_tea: Yup.number(),
@@ -84,6 +86,9 @@ const Perfil = (...props) => {
             Esse nome de usuário <b>não</b> está disponível
           </span>,
           async (value) => {
+            if (value === get(savedCredentials.current, 'username'))
+              return true;
+
             setCheckingUsernameAvailability(true);
 
             if (!isEmpty(value) && !isNil(value)) {
@@ -113,8 +118,9 @@ const Perfil = (...props) => {
       email: Yup.string().email('Insira um e-mail válido'),
       name: Yup.string().required('O Nome é obrigatório'),
       password: Yup.string().required('A Senha é obrigatória'),
-      // type: Yup.number().required('O Tipo é obrigatório'),
-      data: Yup.object(),
+      confirmation_password: Yup.string().required(
+        'A Confirmação de Senha é obrigatória',
+      ),
     });
   }, [token]);
 
@@ -164,7 +170,7 @@ const Perfil = (...props) => {
         label: 'Gênero',
         type: 'radio',
         required: false,
-        custom: true,
+        custom: 'Outro',
         options: [
           {
             value: 'Feminino',
@@ -174,11 +180,6 @@ const Perfil = (...props) => {
             value: 'Masculino',
             text: 'Masculino',
           },
-          {
-            value: 'Outro',
-            text: 'Outro',
-            custom: true,
-          },
         ],
       },
       {
@@ -187,6 +188,34 @@ const Perfil = (...props) => {
         label: 'Data de Nascimento',
         type: 'date',
         required: false,
+      },
+      {
+        name: 'area_atuacao',
+        path: 'data.area_atuacao',
+        label: 'Área de Atuação',
+        type: 'radio',
+        required: false,
+        options: [
+          {
+            text: 'Professor',
+            value: 'Professor',
+          },
+          {
+            text: 'Professor Especialista em Inclusão Escolar',
+            value: 'Especialista',
+          },
+          {
+            text: 'Profissional de Clínica',
+            value: 'Profissional',
+          },
+          {
+            text: 'Profissional Especialista em Inclusão Escolar',
+            value: 'Profissional Especialista',
+          },
+        ],
+        stackProps: {
+          alignItems: 'start',
+        },
       },
       {
         name: 'instituicao',
@@ -271,24 +300,28 @@ const Perfil = (...props) => {
           path: 'username',
           type: 'text',
           label: 'Nome de Usuário',
-          helperText: checkingUsernameAvailability ? (
-            <FormHelperText
-              display="flex"
-              flexDirection="row"
-              alignItems="center">
-              <Spinner size="xs" colorScheme="primary" mr={2} />
-              Verificando disponibilidade do nome de usuário
-            </FormHelperText>
-          ) : inputs?.username === usernameChecked ? (
-            <FormHelperText color="green.700">
-              <Alert status="success">
-                <AlertIcon />
-                <AlertDescription>
-                  Esse nome de usuário está disponível
-                </AlertDescription>
-              </Alert>
-            </FormHelperText>
-          ) : null,
+          helperText: (
+            <>
+              {checkingUsernameAvailability ? (
+                <FormHelperText
+                  display="flex"
+                  flexDirection="row"
+                  alignItems="center">
+                  <Spinner size="xs" colorScheme="primary" mr={2} />
+                  Verificando disponibilidade do nome de usuário
+                </FormHelperText>
+              ) : inputs?.username === usernameChecked ? (
+                <FormHelperText color="green.700">
+                  <Alert status="success">
+                    <AlertIcon />
+                    <AlertDescription>
+                      Esse nome de usuário está disponível
+                    </AlertDescription>
+                  </Alert>
+                </FormHelperText>
+              ) : null}
+            </>
+          ),
         },
         {
           name: 'email',
@@ -297,7 +330,9 @@ const Perfil = (...props) => {
           label: 'E-mail',
           helperStatus: 'warning',
           helperText:
-            'Caso você não possua um e-mail cadastrado, qualquer pedido de mudança de senha será encaminhado para a moderação da plataforma.',
+            isNil(inputs?.email == null) || inputs?.emaill === ''
+              ? 'Caso você não possua um e-mail cadastrado, qualquer pedido de mudança de senha será encaminhado para a moderação da plataforma.'
+              : null,
         },
       ],
       [
@@ -326,6 +361,7 @@ const Perfil = (...props) => {
   const handleValidate = useCallback(
     (preffix, _schema, _setError) => async (name, value, event, input) => {
       const prefixedName = preffix ? `${preffix}.${name}` : name;
+
       try {
         await _schema.validateAt(name, {[name]: value});
         _setError(prefixedName, null);
@@ -356,45 +392,29 @@ const Perfil = (...props) => {
     const fetchUserData = async () => {
       const result = await Usuario.getById(token, user.id, true);
 
-      setUserData(result);
-
-      let nascimento = get(result, 'data.nascimento');
-      nascimento = nascimento ? decodeDate(nascimento) : nascimento;
+      savedCredentials.current = pick(result, 'username', 'email');
 
       setInputs({
-        name: get(result, 'name'),
-        data: {
-          genero: get(result, 'data.genero'),
-          nascimento: Date.now(),
-          instituicao: get(result, 'data.instituicao'),
-          campus: get(result, 'data.campus'),
-          setor: get(result, 'data.setor'),
-          deficiencia: get(result, 'data.deficiencia'),
-          parente_com_tea: get(result, 'data.parente_com_tea'),
-          freq_convivio_tea: get(result, 'data.freq_convivio_tea'),
-          qtd_alunos_tea: get(result, 'data.qtd_alunos_tea'),
-          tempo_trabalho_tea: get(result, 'data.tempo_trabalho_tea'),
-          qtd_pacientes_tea_ano: get(result, 'data.qtd_pacientes_tea_ano'),
+        ...result,
+        created: {
+          ...result.created,
+          date: result.created.date.toDate(),
         },
-
-        username: get(result, 'username'),
-        email: get(result, 'email'),
+        updated: {
+          ...result.updated,
+          date: result.updated.date.toDate(),
+        },
+        data: {
+          ...result.data,
+          nascimento: result.data.nascimento.toDate(),
+        },
       });
-
       setLoading(false);
     };
 
     fetchPrivileges();
     fetchUserData();
-  }, [
-    token,
-    setLoading,
-    setTypeData,
-    setUserData,
-    hasData,
-    user.id,
-    setInputs,
-  ]);
+  }, [token, setLoading, setTypeData, hasData, user.id, setInputs]);
 
   const onSubmit = useCallback(
     (event) => {
@@ -424,8 +444,11 @@ const Perfil = (...props) => {
                 ...credentials,
               })
                 .then(() => {
+                  setHasData(true);
                   setErrors({});
                   setCredentialErrors({});
+
+                  savedCredentials.current = pick(inputs, 'username', 'email');
                 })
                 .catch(() => {
                   alert('Não foi possível atualizar o perfil.'); // TODO: alert mais amigável com melhor descricao do erro
@@ -436,7 +459,8 @@ const Perfil = (...props) => {
                 err.inner.reduce(
                   (obj, error) => ({
                     ...obj,
-                    [`data.${error.path}`]: error.message,
+                    [error.path === 'name' ? 'name' : `data.${error.path}`]:
+                      error.message,
                   }),
                   {},
                 ),
@@ -452,10 +476,9 @@ const Perfil = (...props) => {
           );
         });
     },
-    [inputs, user, credentialSchema, schema, token],
+    [inputs, user, credentialSchema, schema, token, setHasData],
   );
 
-  console.log('perfil', inputs);
   return (
     <S.Wrapper px={{base: 0, lg: 6}}>
       <Text color="#2f7384" fontSize="2xl" fontWeight={600} marginBottom={4}>
@@ -466,21 +489,23 @@ const Perfil = (...props) => {
         bg={{base: 'white', lg: 'white'}}
         color={{base: 'white', lg: 'white'}}
         boxShadow="0px 0.25rem 0.25rem 0px rgba(0, 0, 0, 0.25)">
-        <Stack
-          mx={6}
-          my={5}
-          spacing={4}
-          align="flex-start"
-          justify="center"
-          direction="row">
-          <Alert status="error">
-            <AlertIcon />
-            <AlertDescription color="red.700">
-              É necessário que você preencha o complemento de dados abaixo para
-              continuar usando a plataforma.
-            </AlertDescription>
-          </Alert>
-        </Stack>
+        {!hasData ? (
+          <Stack
+            mx={6}
+            my={5}
+            spacing={4}
+            align="flex-start"
+            justify="center"
+            direction="row">
+            <Alert status="error">
+              <AlertIcon />
+              <AlertDescription color="red.700">
+                É necessário que você preencha o complemento de dados abaixo
+                para continuar usando a plataforma.
+              </AlertDescription>
+            </Alert>
+          </Stack>
+        ) : null}
         <Stack
           mx={5}
           my={5}
