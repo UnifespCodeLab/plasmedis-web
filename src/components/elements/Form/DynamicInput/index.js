@@ -184,7 +184,7 @@ const DynamicInput = ({
     };
   }, [validationEvent, validateHandler, changeHandler]);
 
-  console.log(`(DynamicInput:${type}) render`, props);
+  // console.log(`(DynamicInput:${type}) render`, props);
   switch (type) {
     case 'check':
       return (

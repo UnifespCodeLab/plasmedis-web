@@ -48,12 +48,6 @@ const CompositeInput = ({
   // }, [value]);
 
   const memoizedInput = useMemo(() => {
-    // const memoizedInput = useCallback(() => {
-    console.log(
-      `(MemoizedInput) render, value[${path}]: ${memoizedValue}`,
-      // inputProps,
-    );
-
     return (
       <DynamicInput
         name={name}
@@ -65,21 +59,15 @@ const CompositeInput = ({
         onValidate={onValidate}
       />
     );
-
-    // return <div style={{color: 'red'}}>memoizedInput</div>;
-    // return <div style={{color: 'red'}}>name: {memoizedValue}</div>;
-    // return (
-    //   <DynamicInput
-    //     name={name}
-    //     label={fallbackLabel}
-    //     type={type}
-    //     value={memoizedValue}
-    //     onChange={onChange}
-    //     onValidate={onValidate}
-    //     {...inputProps}
-    //   />
-    // );
-  }, [path, memoizedValue, name, fallbackLabel, onChange, onValidate, props]);
+  }, [
+    name,
+    fallbackLabel,
+    memoizedValue,
+    required,
+    props,
+    onChange,
+    onValidate,
+  ]);
 
   // HELPER
   const helperStatus = useMemo(
@@ -187,7 +175,12 @@ const Form = ({
     return inputs.map((inputData, index) => {
       if (isArray(inputData)) {
         return (
-          <Stack key={index} direction="row" spacing={4} width="100%">
+          <Stack
+            key={index}
+            direction="row"
+            spacing={4}
+            width="100%"
+            alignItems="start">
             {inputData.map((nestedInputData) => renderInput(nestedInputData))}
           </Stack>
         );
