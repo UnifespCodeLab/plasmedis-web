@@ -174,7 +174,7 @@ const Postagem = ({
                 />
               )}
             </Flex>
-            <TextAnchor size="sm" color="black" align="justify">
+            <TextAnchor as="div" size="sm" color="black" align="justify">
               <Anchorme target="_blank" rel="noreferrer noopener">
                 {ReactHtmlParser(item.description)}
               </Anchorme>
