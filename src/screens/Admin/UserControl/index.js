@@ -431,36 +431,43 @@ const UserControl = () => {
     [token],
   );
 
-  const filterUsers = async () => {
-    setLoading(true);
-    try {
-      const result = await Usuarios.getByEmailOrUsername(
-        token,
-        emailFilter,
-        usernameFilter,
-      );
+  const filterUsers = useCallback(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        const result = await Usuarios.getByEmailOrUsername(
+          token,
+          emailFilter,
+          usernameFilter,
+        );
 
-      result.users.map((usuario, index) => {
-        usuario.index = index;
-        usuario.typeName =
-          typeData.find((type) => type.id === usuario.type)?.type ?? '???';
-        return usuario;
-      });
+        const filteredUsers = result.users.map((usuario, index) => {
+          usuario.index = index;
+          usuario.typeName =
+            typeData.find((type) => type.id === usuario.type)?.type ?? '???';
+          return usuario;
+        });
 
-      setUsers(users);
-    } catch (error) {
-      toast.error('Erro ao pesquisar usuários');
-      console.log(error);
-    }
+        setUsers(filteredUsers);
+      } catch (error) {
+        toast.error('Erro ao pesquisar usuários');
+        console.log(error);
+      }
 
-    setLoading(false);
-  };
+      setLoading(false);
+    };
 
-  const handleKeyDown = (event) => {
-    if (event.key === 'Enter') {
-      filterUsers();
-    }
-  };
+    fetchUsers();
+  }, [emailFilter, token, typeData, usernameFilter]);
+
+  const handleKeyDown = useCallback(
+    (event) => {
+      if (event.key === 'Enter') {
+        filterUsers();
+      }
+    },
+    [filterUsers],
+  );
 
   return (
     <S.Wrapper px={{base: 0, lg: 4}}>
