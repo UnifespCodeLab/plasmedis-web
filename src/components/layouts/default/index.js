@@ -72,7 +72,7 @@ const Default = ({children} = {}) => {
 
       {/* Modal de Termos de Uso */}
       <Modal
-        isOpen={!hasAcceptedTerms}
+        isOpen={hasAcceptedTerms === false}
         isCentered
         motionPreset="slideInBottom"
         size="md">
@@ -80,31 +80,37 @@ const Default = ({children} = {}) => {
         <ModalContent>
           <ModalHeader>Termos de Uso</ModalHeader>
           <ModalBody pb={6}>
-            <p>
-              Lorem amet cillum qui amet eiusmod velit adipisicing ut est culpa
-              commodo. Velit est velit culpa elit deserunt nulla ullamco minim.
-              Ea aliquip excepteur consectetur anim non ipsum veniam Lorem amet
-              ullamco cupidatat id enim sit. Tempor culpa ad sint occaecat ad
-              minim. Pariatur consequat duis nisi ullamco ea magna magna minim.
-            </p>
+            <div>
+              <p>
+                Lorem amet cillum qui amet eiusmod velit adipisicing ut est
+                culpa commodo. Velit est velit culpa elit deserunt nulla ullamco
+                minim. Ea aliquip excepteur consectetur anim non ipsum veniam
+                Lorem amet ullamco cupidatat id enim sit. Tempor culpa ad sint
+                occaecat ad minim. Pariatur consequat duis nisi ullamco ea magna
+                magna minim.
+              </p>
+              <br />
 
-            <p>
-              Aute culpa adipisicing qui consequat. Ipsum aute velit tempor
-              labore in id pariatur aliquip. Sit anim ut aliquip aliqua do nisi
-              fugiat nulla deserunt aute Lorem. Sint sit id exercitation commodo
-              minim quis culpa ullamco ex est voluptate.
-            </p>
+              <p>
+                Aute culpa adipisicing qui consequat. Ipsum aute velit tempor
+                labore in id pariatur aliquip. Sit anim ut aliquip aliqua do
+                nisi fugiat nulla deserunt aute Lorem. Sint sit id exercitation
+                commodo minim quis culpa ullamco ex est voluptate.
+              </p>
+              <br />
 
-            <p>
-              Sint excepteur esse cupidatat fugiat eiusmod duis deserunt mollit
-              nostrud cupidatat dolore pariatur magna commodo. Enim deserunt
-              sunt reprehenderit deserunt ad. Fugiat nostrud ad labore magna qui
-              proident dolore consectetur amet id eiusmod laboris. Laboris id
-              proident eu sit Lorem dolor nulla aliqua irure irure commodo
-              dolore dolor. Nisi aliquip aliqua minim ad labore eu deserunt
-              minim ipsum nisi. Sint magna aute tempor elit Lorem pariatur
-              reprehenderit. Ad ad cupidatat cillum officia ea non in culpa ut.
-            </p>
+              <p>
+                Sint excepteur esse cupidatat fugiat eiusmod duis deserunt
+                mollit nostrud cupidatat dolore pariatur magna commodo. Enim
+                deserunt sunt reprehenderit deserunt ad. Fugiat nostrud ad
+                labore magna qui proident dolore consectetur amet id eiusmod
+                laboris. Laboris id proident eu sit Lorem dolor nulla aliqua
+                irure irure commodo dolore dolor. Nisi aliquip aliqua minim ad
+                labore eu deserunt minim ipsum nisi. Sint magna aute tempor elit
+                Lorem pariatur reprehenderit. Ad ad cupidatat cillum officia ea
+                non in culpa ut.
+              </p>
+            </div>
           </ModalBody>
 
           <ModalFooter>

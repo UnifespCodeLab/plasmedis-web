@@ -16,12 +16,12 @@ import {
   FormLabel,
   FormErrorMessage,
   FormHelperText,
+  Spinner,
   Select,
   Button,
   Alert,
   AlertIcon,
   AlertDescription,
-  Spinner,
   Tooltip,
   NumberInput,
   NumberInputField,
@@ -43,6 +43,7 @@ import DatePicker from '../../components/elements/DatePicker';
 import Form from '../../components/elements/Form';
 
 const Perfil = (...props) => {
+  const dataWarning = useRef(false);
   const {token, hasData, setHasData, user} = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [typeData, setTypeData] = useState(null);
@@ -376,10 +377,12 @@ const Perfil = (...props) => {
   useEffect(async () => {
     if (isNil(token) || isEmpty(token)) return;
 
-    if (!hasData)
+    if (!hasData && dataWarning.current === false) {
       alert(
         'Você deve terminar de preencher seu perfil para continuar usando a plataforma.',
       );
+      dataWarning.current = true;
+    }
 
     setLoading(true);
 
@@ -394,7 +397,7 @@ const Perfil = (...props) => {
 
       savedCredentials.current = pick(result, 'username', 'email');
 
-      setInputs({
+      const parsedResult = {
         ...result,
         created: {
           ...result.created,
@@ -406,9 +409,13 @@ const Perfil = (...props) => {
         },
         data: {
           ...result.data,
-          nascimento: result.data.nascimento.toDate(),
+          nascimento: result.data.nascimento.isValid()
+            ? result.data.nascimento.toDate()
+            : undefined,
         },
-      });
+      };
+
+      setInputs(parsedResult);
       setLoading(false);
     };
 
