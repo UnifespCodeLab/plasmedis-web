@@ -10,6 +10,8 @@ import React, {
   useRef,
 } from 'react';
 import {
+  Input,
+  InputGroup,
   Alert,
   AlertIcon,
   AlertDescription,
@@ -36,8 +38,10 @@ import {
 } from '@chakra-ui/react';
 import {Button} from '@chakra-ui/button';
 import {useHistory} from 'react-router-dom';
+import {Flex} from '@chakra-ui/layout';
 import {MdEdit} from 'react-icons/md';
 import * as Yup from 'yup';
+import {toast} from 'react-toastify';
 import * as S from './styles';
 
 import Form from '../../../components/elements/Form';
@@ -53,7 +57,11 @@ const UserControl = () => {
 
   const {isOpen, onOpen, onClose} = useDisclosure();
   const [users, setUsers] = useState(null);
-  const [typeData, setTypeData] = useState(null);
+  const [typeData, setTypeData] = useState([]);
+
+  const [emailFilter, setEmailFilter] = useState(null);
+  const [usernameFilter, setUsernameFilter] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const [savingUser, setSavingUser] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -423,11 +431,75 @@ const UserControl = () => {
     [token],
   );
 
+  const filterUsers = async () => {
+    setLoading(true);
+    try {
+      const result = await Usuarios.getByEmailOrUsername(
+        token,
+        emailFilter,
+        usernameFilter,
+      );
+
+      result.users.map((usuario, index) => {
+        usuario.index = index;
+        usuario.typeName =
+          typeData.find((type) => type.id === usuario.type)?.type ?? '???';
+        return usuario;
+      });
+
+      setUsers(users);
+    } catch (error) {
+      toast.error('Erro ao pesquisar usuários');
+      console.log(error);
+    }
+
+    setLoading(false);
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      filterUsers();
+    }
+  };
+
   return (
     <S.Wrapper px={{base: 0, lg: 4}}>
       <S.Text color="#2f7384" fontSize="2xl" fontWeight={600} marginBottom={4}>
         Controle de usuários
       </S.Text>
+
+      <Flex direction="row" mb={4} alignItems="center">
+        <Input
+          color="#000"
+          type="text"
+          width="50%"
+          mr={4}
+          placeholder="Filtrar por email"
+          value={emailFilter}
+          onInput={(event) => setEmailFilter(event.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+        <S.Text color="#2f7384" mr={4}>
+          e/ou
+        </S.Text>
+        <Input
+          color="#000"
+          type="text"
+          width="50%"
+          mr={4}
+          placeholder="Filtrar pelo nome de usuário"
+          value={usernameFilter}
+          onInput={(event) => setUsernameFilter(event.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+        <Button
+          colorScheme="primary"
+          isLoading={loading}
+          onClick={() => filterUsers()}>
+          Pesquisar
+        </Button>
+      </Flex>
+
       <Box
         borderRadius={10}
         bg={{base: 'white', lg: 'white'}}
