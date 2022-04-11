@@ -14,6 +14,8 @@ import {
 import {isArray, isNil} from 'lodash';
 import Textarea from '../Textarea';
 
+import './style.css';
+
 const CustomRadio = ({
   value,
   onChange: onChangeProp,
@@ -23,32 +25,10 @@ const CustomRadio = ({
   optionProps,
   ...props
 } = {}) => {
-  const processedValue = useMemo(() => {
-    if (isNil(value)) return value;
-
-    const matchingOption = options.find((option) => option.value === value);
-    if (!matchingOption) {
-      return options.find((option) => option.custom).value;
-    }
-
-    return value;
-  }, [value, options]);
-
-  // CUSTOM
-  const customOption = useMemo(() => {
-    if (!custom) return undefined;
-
-    return (options || []).find((option) => option.custom);
-  }, [custom, options]);
-
-  const isCustomSelected = useMemo(
-    () => customOption?.value === value,
-    [customOption, processedValue],
-  );
-
   // VALUE
   const [radioValue, setRadioValue] = useState(value);
   const [customValue, setCustomValue] = useState(value);
+  const isCustomSelected = useMemo(() => radioValue === 'custom', [radioValue]);
 
   useEffect(() => {
     if (!custom) {
@@ -58,7 +38,7 @@ const CustomRadio = ({
       if (!matchingOption) {
         // custom value
         setCustomValue(value);
-        setRadioValue(options.find((option) => option.custom).value);
+        setRadioValue('custom');
       } else {
         setCustomValue(undefined);
         setRadioValue(value);
@@ -72,10 +52,10 @@ const CustomRadio = ({
 
       if (!onChangeProp) return;
 
-      if (isCustomSelected) onChangeProp(customValue, true);
-      onChangeProp(newValue, false);
+      if (newValue === 'custom') onChangeProp(customValue, true);
+      else onChangeProp(newValue, false);
     },
-    [onChangeProp, isCustomSelected, customValue],
+    [onChangeProp, customValue],
   );
 
   const onTextBlur = useCallback(
@@ -88,7 +68,11 @@ const CustomRadio = ({
 
   return (
     <RadioGroup value={radioValue} onChange={onRadioChange} {...props}>
-      <Stack spacing={8} {...(stackProps || {})} direction="row">
+      <Stack
+        spacing={8}
+        direction="row"
+        alignItems="center"
+        {...(stackProps || {})}>
         {(options || []).map((option, index) => {
           return (
             <Radio
@@ -101,23 +85,31 @@ const CustomRadio = ({
           );
         })}
         {custom ? (
-          <Input
-            type="text"
-            disabled={!isCustomSelected}
-            placeholder={customOption.text || customOption.value}
-            value={customValue || ''}
-            onChange={(event) => setCustomValue(event.target.value)}
-            onBlur={onTextBlur}
-            // {...validationProps}
-            // text props
-            color="black"
-            // maskChar={null}
-            // as={!isNil(mask) ? InputMask : undefined}
-            // {...inputProps}
-            // placeholder={
-            //   placeholder === undefined ? label : placeholder && placeholder
-            // }
-          />
+          <>
+            <Radio
+              value="custom"
+              // radio props
+              {...optionProps}>
+              <span style={{color: '#000'}}>{custom}</span>
+            </Radio>
+            <Input
+              type="text"
+              disabled={!isCustomSelected}
+              placeholder={custom}
+              value={customValue || ''}
+              onChange={(event) => setCustomValue(event.target.value)}
+              onBlur={onTextBlur}
+              // {...validationProps}
+              // text props
+              color="black"
+              // maskChar={null}
+              // as={!isNil(mask) ? InputMask : undefined}
+              // {...inputProps}
+              // placeholder={
+              //   placeholder === undefined ? label : placeholder && placeholder
+              // }
+            />
+          </>
         ) : null}
       </Stack>
     </RadioGroup>

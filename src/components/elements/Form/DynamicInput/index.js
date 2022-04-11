@@ -68,6 +68,7 @@ const DynamicInput = ({
   onChange,
   validateOn,
   onValidate,
+  required,
   ...props
 }) => {
   const {
@@ -114,6 +115,22 @@ const DynamicInput = ({
   );
 
   // VALIDATION
+  const emptyCheck = useMemo(() => {
+    switch (type) {
+      case 'numeric':
+      case 'text':
+      case 'email':
+      case 'password':
+      case 'date':
+      case 'select':
+        return (v) => isNil(v) || v === '';
+      case 'check':
+      case 'radio':
+      default:
+        return (v) => isNil(v);
+    }
+  }, [type]);
+
   const validationEvent = useMemo(() => {
     if (!isNil(validateOn)) return validateOn;
 
@@ -144,10 +161,13 @@ const DynamicInput = ({
   const validateHandler = useCallback(
     (arg1, arg2) => {
       const [eventValue, event] = spreadEventArgumentsByType(type, arg1, arg2);
+
+      if (emptyCheck(eventValue)) return;
+
       // TODO: check if value changed before disptaching validate event
       debouncedOnValidate(eventValue, event);
     },
-    [debouncedOnValidate, type],
+    [debouncedOnValidate, type, emptyCheck],
   );
 
   const validationProps = useMemo(() => {
@@ -185,7 +205,9 @@ const DynamicInput = ({
         <DatePicker
           name={name}
           value={controlledValue}
-          onChange={(inputValue, event) => propagateOnChange(inputValue, event)}
+          onChange={(inputValue, event) =>
+            propagateOnChange(new Date(inputValue), event)
+          }
           {...validationProps}
           // date props
           dateFormat="dd/MM/yyyy"

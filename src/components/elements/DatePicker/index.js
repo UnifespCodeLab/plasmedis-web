@@ -15,7 +15,7 @@ const DatePicker = ({
   ...props
 }) => {
   const isLight = useColorMode().colorMode === 'light'; // you can check what theme you are using right now however you want
-  console.log('VALUE DATEPICKER', value, typeof value);
+  // console.log('VALUE DATEPICKER', value, typeof value);
   return (
     // if you don't want to use chakra's colors or you just wwant to use the original ones,
     // set className to "light-theme-original" ↓↓↓↓

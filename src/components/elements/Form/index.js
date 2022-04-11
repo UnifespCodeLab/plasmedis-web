@@ -59,6 +59,7 @@ const CompositeInput = ({
         name={name}
         label={fallbackLabel}
         value={memoizedValue}
+        required={required}
         {...props}
         onChange={onChange}
         onValidate={onValidate}
@@ -96,6 +97,7 @@ const CompositeInput = ({
   );
 
   const helperNode = useMemo(() => {
+    // console.log('============  HELPER NODE  ==================');
     if (isEmpty(helperText) || isNil(helperText)) return null;
 
     if (!isString(helperText)) return helperText;
@@ -118,14 +120,13 @@ const CompositeInput = ({
         {!required ? null : <Text color="red">*</Text>}
       </FormLabel>
       {memoizedInput}
-
       <FormErrorMessage>
         <Alert status="error">
           <AlertIcon />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       </FormErrorMessage>
-      {helperNode}
+      {error ? null : helperNode}
     </FormControl>
   );
 };
@@ -229,20 +230,38 @@ Form.defaultProps = {
 
 Form.propTypes = {
   inputs: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      type: PropTypes.string.isRequired,
-      path: PropTypes.string.isRequired,
-      // name: PropTypes.string.isRequired,
-      // placeholder: PropTypes.string,
-      // mask: PropTypes.regex,
-      // alternatives: PropTypes.arrayOf(
-      //   PropTypes.shape({
-      //     id: PropTypes.number.isRequired,
-      //     value: PropTypes.string.isRequired,
-      //   }),
-      // ),
-    }),
+    PropTypes.oneOfType([
+      PropTypes.arrayOf(
+        PropTypes.shape({
+          name: PropTypes.string.isRequired,
+          type: PropTypes.string.isRequired,
+          path: PropTypes.string.isRequired,
+          // name: PropTypes.string.isRequired,
+          // placeholder: PropTypes.string,
+          // mask: PropTypes.regex,
+          // alternatives: PropTypes.arrayOf(
+          //   PropTypes.shape({
+          //     id: PropTypes.number.isRequired,
+          //     value: PropTypes.string.isRequired,
+          //   }),
+          // ),
+        }),
+      ),
+      PropTypes.shape({
+        name: PropTypes.string.isRequired,
+        type: PropTypes.string.isRequired,
+        path: PropTypes.string.isRequired,
+        // name: PropTypes.string.isRequired,
+        // placeholder: PropTypes.string,
+        // mask: PropTypes.regex,
+        // alternatives: PropTypes.arrayOf(
+        //   PropTypes.shape({
+        //     id: PropTypes.number.isRequired,
+        //     value: PropTypes.string.isRequired,
+        //   }),
+        // ),
+      }),
+    ]),
   ),
   // eslint-disable-next-line react/forbid-prop-types
   value: PropTypes.object,
