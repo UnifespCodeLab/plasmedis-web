@@ -1,7 +1,7 @@
 import {isEmpty, isNil} from 'lodash';
 import api from '../../services/api';
 
-export default async function create(token, newPostagem, currentUserId) {
+export default async function create(token, newPostagem) {
   if (isNil(token) || isEmpty(token))
     throw new Error('Token não foi informado');
 
