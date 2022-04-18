@@ -22,10 +22,11 @@ import ReactHtmlParser from 'react-html-parser';
 
 import {Button} from '@chakra-ui/button';
 import Icon from '@chakra-ui/icon';
-import {get} from 'lodash';
+import {get, isNil} from 'lodash';
 
 import * as User from '../../../domain/usuarios';
 import {deleteById} from '../../../domain/postagens';
+import * as Comments from '../../../domain/comentarios';
 
 import {TextAnchor, FiTrashIcon} from './styles';
 
@@ -80,11 +81,16 @@ const Postagem = ({
     return false;
   };
 
-  const showDeleteDialog = async (userId) => {
+  const showDeleteDialog = async (postId) => {
     // eslint-disable-next-line no-restricted-globals
-    if (confirm('Deseja realmente excluir esse post?')) {
-      await deleteById(token, userId);
-      document.location.reload(true);
+    if (confirm('Deseja realmente excluir essa postagem?')) {
+      deleteById(token, postId)
+        .then(() => {
+          document.location.reload(true);
+        })
+        .catch(() => {
+          alert('Não foi possível excluir a postagem');
+        });
     }
   };
 
@@ -113,6 +119,21 @@ const Postagem = ({
       });
     }
   }, [verifyingPost, item, onAddSelo, onOpen]);
+
+  const onCommentDelete = useCallback(
+    (commentId) => {
+      if (isNil(comments)) return;
+      Comments.delete(token, commentId)
+        .then(() => {
+          setComments(comments.filter((comment) => comment.id !== commentId));
+          alert('Comentário removido');
+        })
+        .catch(() => {
+          alert('Não foi possível remover o comentário');
+        });
+    },
+    [token, comments, setComments],
+  );
 
   return (
     <>
@@ -240,7 +261,11 @@ const Postagem = ({
                     </Box>
                   )}
                   {(comments ?? []).map((comment, index) => (
-                    <Comentario key={index} item={comment} />
+                    <Comentario
+                      key={index}
+                      item={comment}
+                      onDelete={() => onCommentDelete(comment.id)}
+                    />
                   ))}
                 </Stack>
               </Box>

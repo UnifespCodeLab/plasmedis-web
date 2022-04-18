@@ -9,13 +9,13 @@ export default async function (token, id) {
   if (isNil(id) || (isEmpty(id) && isString(id)))
     throw new Error('Id do comentário não foi informado');
 
-  const response = await api.delete(`/commentarios/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  console.log(response);
-
-  return {};
+  try {
+    await api.delete(`/comments/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    throw new Error('Não possivel excluir o comentário');
+  }
 }

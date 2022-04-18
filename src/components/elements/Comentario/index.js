@@ -1,13 +1,12 @@
-import React, {useContext} from 'react';
+import React, {useCallback, useContext, useMemo} from 'react';
 import PropTypes from 'prop-types';
 import {Anchorme} from 'react-anchorme';
 import {Stack, Box, Text, Flex} from '@chakra-ui/layout';
 import {Avatar} from '@chakra-ui/avatar';
-import {FiTrash} from 'react-icons/fi';
 import {Context as AuthContext} from '../../stores/Auth';
-import {TextAnchor} from './styles.js';
+import {TextAnchor, FiTrashIcon} from './styles.js';
 
-const Comentario = ({item} = {}) => {
+const Comentario = ({item, onDelete: onDeleteProp} = {}) => {
   const {user} = useContext(AuthContext);
 
   const checkIfIsAbleToDelete = () => {
@@ -18,9 +17,9 @@ const Comentario = ({item} = {}) => {
     return false;
   };
 
-  const deleteComment = (commentId) => {
-    console.log('Teste', commentId);
-  };
+  const onDelete = useMemo(() => {
+    return onDeleteProp || (() => {});
+  }, [onDeleteProp]);
 
   return (
     <Flex flexDirection="row" align="flex-start">
@@ -36,7 +35,7 @@ const Comentario = ({item} = {}) => {
             </Text>
           </Text>
           {checkIfIsAbleToDelete() ? (
-            <FiTrash size={15} onClick={() => deleteComment(item.id)} />
+            <FiTrashIcon size={15} onClick={onDelete} />
           ) : (
             <></>
           )}

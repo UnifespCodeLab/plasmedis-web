@@ -1,4 +1,5 @@
 import {Text} from '@chakra-ui/layout';
+import {FiTrash} from 'react-icons/fi';
 import styled from 'styled-components';
 
 export const TextAnchor = styled(Text)`
@@ -10,6 +11,11 @@ export const TextAnchor = styled(Text)`
   
 `;
 
+export const FiTrashIcon = styled(FiTrash)`
+  cursor: pointer;
+`;
+
 export default {
   TextAnchor,
+  FiTrashIcon,
 };
