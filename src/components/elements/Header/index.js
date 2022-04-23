@@ -15,7 +15,7 @@ const Header = ({children, open, onMenu} = {}) => (
       color={{base: 'white', lg: 'primary.600'}}>
       <Container className="TETSEEEE" py={4} px={{base: 6, lg: 4}}>
         <Text fontWeight="bold" fontSize="xl">
-          IBEApp
+          TEApp
         </Text>
 
         <Box display={{base: 'block', lg: 'none'}}>

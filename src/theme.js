@@ -5,6 +5,8 @@ import {extendTheme} from '@chakra-ui/react';
  */
 
 export default extendTheme({
+  initialColorMode: 'dark',
+  useSystemColorMode: false,
   colors: {
     primary: {
       50: '#e0f3fe',

@@ -1,3 +1,4 @@
+import {isEmpty, isNil} from 'lodash';
 import api from '../services/api';
 
 export default function login({username, password} = {}) {
@@ -15,6 +16,24 @@ export async function get() {
     const response = await api.get('auth/login');
     return response.data ?? {};
   } catch {
+    return null;
+  }
+}
+
+export async function me(token) {
+  if (isNil(token) || isEmpty(token))
+    throw new Error('Token não foi informado');
+
+  try {
+    const response = await api.get(`auth/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (e) {
+    // eslint-disable-next-line no-alert
+    alert('Não foi possível recuperar as informações do usuário autenticado');
     return null;
   }
 }
