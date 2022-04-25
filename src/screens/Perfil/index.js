@@ -553,7 +553,7 @@ const Perfil = (...props) => {
                   <Alert status="info" mb={4}>
                     <AlertIcon />
                     <AlertDescription color="blue.700">
-                      Para alteral qualquer informação abaixo será necessário
+                      Para alterar qualquer informação abaixo será necessário
                       informar e confirmar a senha.
                     </AlertDescription>
                   </Alert>
