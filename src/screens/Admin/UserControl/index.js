@@ -601,7 +601,7 @@ const UserControl = () => {
                   onClick={() => {
                     setSavingUser(true);
 
-                    Usuarios.updateById(token, user.id, inputs)
+                    Usuarios.updateById(token, selectedUser.id, inputs)
                       .then(() => {
                         setUsers(
                           users.map((_user) => {

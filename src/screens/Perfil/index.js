@@ -118,10 +118,9 @@ const Perfil = (...props) => {
         ),
       email: Yup.string().email('Insira um e-mail válido'),
       name: Yup.string().required('O Nome é obrigatório'),
-      password: Yup.string().required('A Senha é obrigatória'),
-      confirmation_password: Yup.string().required(
-        'A Confirmação de Senha é obrigatória',
-      ),
+      current_password: Yup.string(),
+      password: Yup.string(),
+      confirmation_password: Yup.string(),
     });
   }, [token]);
 
@@ -341,15 +340,21 @@ const Perfil = (...props) => {
           name: 'password',
           path: 'password',
           type: 'password',
-          label: 'Senha',
+          label: 'Nova Senha',
         },
         {
-          name: 'confirmation_password',
+          name: 'confirmationPassword',
           path: 'confirmation_password',
           type: 'password',
           label: 'Confirmação de Senha',
         },
       ],
+      {
+        name: 'currentPassword',
+        path: 'current_password',
+        type: 'password',
+        label: 'Senha Atual',
+      },
     ],
     [checkingUsernameAvailability, inputs, usernameChecked],
   );
@@ -428,7 +433,30 @@ const Perfil = (...props) => {
       event.preventDefault();
 
       let validationPromise = Promise.resolve({});
-      if (inputs.username !== user.username || inputs.email !== user.email) {
+      // TODO: Encaixar essas validacoes complexas dentro do YUP schema
+      if (
+        (!isNil(inputs.password) && !isEmpty(inputs.password)) || // senha/confirmacao de senha nao está vazio
+        inputs.username !== user.username || // mudou username
+        inputs.email !== user.email // mudou email
+      ) {
+        if (
+          isNil(inputs.current_password) ||
+          isEmpty(inputs.current_password)
+        ) {
+          setCredentialError('current_password', 'Informe a senha atual.');
+          return;
+        }
+
+        if (!isNil(inputs.password) && !isEmpty(inputs.password)) {
+          if (inputs.password !== inputs.confirmation_password) {
+            setCredentialError(
+              'confirmation_password',
+              'Os campos "Senha" e "Confirmação de Senha" devem ser iguais.',
+            );
+            return;
+          }
+        }
+
         validationPromise = credentialSchema.validate(inputs, {
           abortEarly: false,
         });
@@ -446,11 +474,18 @@ const Perfil = (...props) => {
               delete data.name;
 
               Usuario.updateById(token, user.id, {
+                ...credentials,
                 name,
                 data,
-                ...credentials,
               })
                 .then(() => {
+                  // reset passwords
+                  setInputs({
+                    ...inputs,
+                    current_password: undefined,
+                    password: undefined,
+                    confirmation_password: undefined,
+                  });
                   setHasData(true);
                   setErrors({});
                   setCredentialErrors({});
@@ -554,7 +589,7 @@ const Perfil = (...props) => {
                     <AlertIcon />
                     <AlertDescription color="blue.700">
                       Para alteral qualquer informação abaixo será necessário
-                      informar e confirmar a senha.
+                      informar a senha atual.
                     </AlertDescription>
                   </Alert>
                   <Form
