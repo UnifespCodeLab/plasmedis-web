@@ -1,7 +1,13 @@
 /* eslint-disable no-alert */
-import React, {useState, useEffect, useCallback, useContext} from 'react';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useContext,
+  useMemo,
+} from 'react';
 import PropTypes from 'prop-types';
-import {Anchorme} from 'react-anchorme';
+import anchorme from 'anchorme';
 import {Stack, Box, Text, Flex} from '@chakra-ui/layout';
 import {Avatar} from '@chakra-ui/avatar';
 import {
@@ -22,7 +28,7 @@ import ReactHtmlParser from 'react-html-parser';
 
 import {Button} from '@chakra-ui/button';
 import Icon from '@chakra-ui/icon';
-import {get, isNil} from 'lodash';
+import {get, isNil, isString} from 'lodash';
 
 import * as User from '../../../domain/usuarios';
 import {deleteById} from '../../../domain/postagens';
@@ -33,6 +39,8 @@ import {TextAnchor, FiTrashIcon} from './styles';
 import Comentario from '../Comentario';
 
 import {Context as AuthContext} from '../../stores/Auth';
+
+import Link from '../Link';
 
 const Postagem = ({
   item,
@@ -59,6 +67,43 @@ const Postagem = ({
 
   const [messageHeader, setMessageHeader] = useState('');
   const [messageBody, setMessageBody] = useState('');
+
+  const htmlDescription = useMemo(() => {
+    const text = item.description;
+
+    let elements = [];
+    const matches = anchorme.list(text);
+
+    if (matches.length === 0) elements = [text];
+    else {
+      let lastIndex = 0;
+      matches.forEach((match, index) => {
+        // Push text located before matched string
+        if (match.start > lastIndex)
+          elements.push(text.substring(lastIndex, match.start));
+
+        // Push Link component
+        elements.push(
+          <Link
+            target="_blank"
+            rel="noreferrer noopener"
+            key={index}
+            href={match.string}
+          />,
+        );
+
+        lastIndex = match.end;
+      });
+
+      // Push remaining text
+      if (text.length > lastIndex) elements.push(text.substring(lastIndex));
+    }
+
+    return elements.map((element) => {
+      if (isString(element)) return ReactHtmlParser(element);
+      return element;
+    });
+  }, [item]);
 
   const fetchAndUpdateComments = useCallback(
     (id) => {
@@ -196,9 +241,7 @@ const Postagem = ({
               )}
             </Flex>
             <TextAnchor as="div" size="sm" color="black" align="justify">
-              <Anchorme target="_blank" rel="noreferrer noopener">
-                {ReactHtmlParser(item.description)}
-              </Anchorme>
+              {htmlDescription}
             </TextAnchor>
             <Text
               cursor="pointer"
