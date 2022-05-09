@@ -218,7 +218,7 @@ function Home() {
             return post?.comments ?? [];
           }}
           onCreateComment={(newComment, itemId) => {
-            return Comentarios.create(token, newComment, user.id, itemId); // TODO: show error/success message
+            return Comentarios.create(token, newComment, itemId); // TODO: show error/success message
           }}
           onAddSelo={(itemId) => {
             return Postagens.addSelo(token, itemId);
@@ -249,7 +249,7 @@ function Home() {
               disabled={creatingPost}
               onClick={() => {
                 setCreatingPost(true);
-                Postagens.create(token, newPostagem, user.id).then(() => {
+                Postagens.create(token, newPostagem).then(() => {
                   onClose();
                   setCreatingPost(false);
                   setNewPostagem({});

@@ -66,7 +66,7 @@ const Provider = ({children} = {}) => {
     (value = true) => {
       setHasAcceptedTerms(value);
       updateById(token, get(user, 'id'), {
-        hasAcceptedTerms: value,
+        has_accepted_terms: value,
       });
     },
     [token, user, setHasAcceptedTerms],

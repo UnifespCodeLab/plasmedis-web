@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import {isEmpty, isNil} from 'lodash';
 import api from '../../services/api';
 
@@ -12,9 +13,10 @@ export default async function updateById(token, userId, objectToSend) {
       username,
       email,
       name,
-      hasAcceptedTerms,
+      has_accepted_terms,
+      current_password,
       password,
-      confirmationPassword,
+      confirmation_password,
       data,
     } = objectToSend;
 
@@ -24,9 +26,10 @@ export default async function updateById(token, userId, objectToSend) {
       username,
       email,
       name,
-      has_accepted_terms: hasAcceptedTerms,
+      has_accepted_terms,
+      current_password,
       password,
-      confirmation_password: confirmationPassword,
+      confirmation_password,
       data,
     };
 
