@@ -48,7 +48,7 @@ const Postagem = ({
   verifiable,
   fetchComments,
   onCreateComment,
-  onAddSelo,
+  onToggleSelo,
 } = {}) => {
   const {token} = useContext(AuthContext);
   const [openComments, setOpenComments] = useState(false);
@@ -145,25 +145,31 @@ const Postagem = ({
       fetchAndUpdateComments(item?.id);
   }, [openComments, item, comments, fetchAndUpdateComments]);
 
-  useEffect(() => {
-    if (verifyingPost && item?.id && onAddSelo) {
-      onAddSelo(item.id).then((success) => {
-        if (success) {
-          setMessageHeader('Sucesso!');
-          setMessageBody('A postagem foi verificada com sucesso!');
-          item.verified = true;
-          onOpen();
-        } else {
-          setMessageHeader('Erro!');
-          setMessageBody(
-            'Ocorreu um erro ao verificar a postagem. Verifique com o administrador',
-          );
-        }
+  const toggleVerifyPost = useCallback(() => {
+    if (!verifiable && item?.id) return;
 
-        setVerifyingPost(false);
-      });
-    }
-  }, [verifyingPost, item, onAddSelo, onOpen]);
+    setVerifyingPost(true);
+
+    onToggleSelo(item.id).then((newStatus) => {
+      if (!isNil(newStatus)) {
+        setMessageHeader('Sucesso!');
+        setMessageBody(
+          newStatus
+            ? `A postagem foi verificada com sucesso!`
+            : 'A postagem não é mais verificada!',
+        );
+        item.verified = newStatus;
+        onOpen();
+      } else {
+        setMessageHeader('Erro!');
+        setMessageBody(
+          'Ocorreu um erro ao verificar a postagem. Verifique com o administrador',
+        );
+      }
+
+      setVerifyingPost(false);
+    });
+  }, [verifiable, item, onToggleSelo, onOpen]);
 
   const onCommentDelete = useCallback(
     (commentId) => {
@@ -218,9 +224,9 @@ const Postagem = ({
               {(item.verified || verifiable) && (
                 <IconButton
                   aria-label={
-                    item.verified
-                      ? 'Postagem verificada'
-                      : 'Clique aqui para verificar postagem'
+                    !item.verified && verifiable
+                      ? 'Clique aqui para verificar postagem'
+                      : 'Postagem verificada'
                   }
                   cursor={item.verified ? 'auto' : 'pointer'}
                   display="flex"
@@ -233,9 +239,7 @@ const Postagem = ({
                   }
                   isDisabled={!verifiable}
                   isLoading={verifyingPost}
-                  onClick={() =>
-                    verifiable && !item.verified && setVerifyingPost(true)
-                  }
+                  onClick={() => toggleVerifyPost()}
                   variant="unstyled"
                 />
               )}
@@ -350,7 +354,7 @@ Postagem.defaultProps = {
   verifiable: false,
   fetchComments: async () => [],
   onCreateComment: () => {},
-  onAddSelo: () => {},
+  onToggleSelo: () => {},
 };
 Postagem.propTypes = {
   item: PropTypes.shape({
@@ -373,7 +377,7 @@ Postagem.propTypes = {
   verifiable: PropTypes.bool,
   fetchComments: PropTypes.func,
   onCreateComment: PropTypes.func,
-  onAddSelo: PropTypes.func,
+  onToggleSelo: PropTypes.func,
 };
 
 export default Postagem;

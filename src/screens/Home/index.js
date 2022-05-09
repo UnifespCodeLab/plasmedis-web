@@ -220,8 +220,8 @@ function Home() {
           onCreateComment={(newComment, itemId) => {
             return Comentarios.create(token, newComment, itemId); // TODO: show error/success message
           }}
-          onAddSelo={(itemId) => {
-            return Postagens.addSelo(token, itemId);
+          onToggleSelo={(itemId) => {
+            return Postagens.toggleSelo(token, itemId);
           }}
           value={posts}
         />
