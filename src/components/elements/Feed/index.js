@@ -13,7 +13,7 @@ const Feed = ({
   canVerifyPost,
   fetchComments,
   onCreateComment,
-  onAddSelo,
+  onToggleSelo,
 } = {}) => {
   if (isNull(value)) {
     return (
@@ -33,7 +33,7 @@ const Feed = ({
           verifiable={canVerifyPost}
           fetchComments={fetchComments}
           onCreateComment={onCreateComment}
-          onAddSelo={onAddSelo}
+          onToggleSelo={onToggleSelo}
         />
       ))}
     </>
@@ -47,7 +47,7 @@ Feed.defaultProps = {
   canVerifyPost: false,
   fetchComments: async () => [],
   onCreateComment: () => {},
-  onAddSelo: () => {},
+  onToggleSelo: () => {},
 };
 Feed.propTypes = {
   value: PropTypes.arrayOf(
@@ -65,7 +65,7 @@ Feed.propTypes = {
   canVerifyPost: PropTypes.bool,
   fetchComments: PropTypes.func,
   onCreateComment: PropTypes.func,
-  onAddSelo: PropTypes.func,
+  onToggleSelo: PropTypes.func,
 };
 
 export default Feed;

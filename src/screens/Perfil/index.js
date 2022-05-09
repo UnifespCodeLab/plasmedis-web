@@ -1,3 +1,4 @@
+/* eslint-disable no-alert */
 import React, {
   useRef,
   useState,
@@ -10,36 +11,23 @@ import {
   Text,
   Box,
   Stack,
-  Input,
-  Checkbox,
-  FormControl,
-  FormLabel,
-  FormErrorMessage,
   FormHelperText,
   Spinner,
-  Select,
   Button,
   Alert,
   AlertIcon,
   AlertDescription,
   Tooltip,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
 } from '@chakra-ui/react';
 
-import {debounce, get, isEmpty, isNil, omit, pick, set, toPath} from 'lodash';
+import {get, isEmpty, isNil, pick, set} from 'lodash';
 import * as Yup from 'yup';
-import moment from 'moment';
 
 import * as S from './styles';
 import * as Usuario from '../../domain/usuarios';
 import * as Privilegio from '../../domain/privilegios';
 
 import {Context as AuthContext} from '../../components/stores/Auth';
-import DatePicker from '../../components/elements/DatePicker';
 import Form from '../../components/elements/Form';
 
 const Perfil = (...props) => {
@@ -222,6 +210,7 @@ const Perfil = (...props) => {
         path: 'data.instituicao',
         label: 'Instituição',
         type: 'text',
+        placeholder: 'Ex: UNIFESP',
         required: false,
       },
       [
@@ -230,6 +219,7 @@ const Perfil = (...props) => {
           path: 'data.campus',
           label: 'Campus',
           type: 'text',
+          placeholder: 'Ex: São José dos Campos',
           required: false,
         },
         {
@@ -237,6 +227,7 @@ const Perfil = (...props) => {
           path: 'data.setor',
           label: 'Setor',
           type: 'text',
+          placeholder: 'Ex: setor...',
           required: false,
         },
       ],
@@ -260,14 +251,16 @@ const Perfil = (...props) => {
         {
           name: 'freq_convivio_tea',
           path: 'data.freq_convivio_tea',
-          label: 'Frequência de Convívio TEA',
-          type: 'text',
+          label: 'Frequência de Convívio TEA por semana',
+          type: 'numeric',
+          placeholder: 'Ex: 2',
           required: false,
         },
         {
           name: 'qtd_alunos_tea',
           path: 'data.qtd_alunos_tea',
           label: 'Quantidade de Alunos TEA',
+          placeholder: 'Ex: 2',
           type: 'numeric',
           required: false,
         },
@@ -277,6 +270,7 @@ const Perfil = (...props) => {
           name: 'tempo_trabalho_tea',
           path: 'data.tempo_trabalho_tea',
           label: 'Tempo de Trabalho TEA',
+          placeholder: 'Ex: 2',
           type: 'numeric',
           required: false,
         },
@@ -284,6 +278,7 @@ const Perfil = (...props) => {
           name: 'qtd_pacientes_tea_ano',
           path: 'data.qtd_pacientes_tea_ano',
           label: 'Quantidade de Pacientes TEA/Ano',
+          placeholder: 'Ex: 1',
           type: 'numeric',
           required: false,
         },
@@ -296,10 +291,22 @@ const Perfil = (...props) => {
     () => [
       [
         {
+          name: 'email',
+          path: 'email',
+          type: 'email',
+          label: 'E-mail',
+          helperStatus: 'warning',
+          helperText:
+            isNil(inputs?.email == null) || inputs?.emaill === ''
+              ? 'Caso você não possua um e-mail cadastrado, qualquer pedido de mudança de senha será encaminhado para a moderação da plataforma.'
+              : null,
+        },
+        {
           name: 'username',
           path: 'username',
           type: 'text',
           label: 'Nome de Usuário',
+          placeholder: 'nome.sobrenome',
           helperText: (
             <>
               {checkingUsernameAvailability ? (
@@ -322,17 +329,6 @@ const Perfil = (...props) => {
               ) : null}
             </>
           ),
-        },
-        {
-          name: 'email',
-          path: 'email',
-          type: 'email',
-          label: 'E-mail',
-          helperStatus: 'warning',
-          helperText:
-            isNil(inputs?.email == null) || inputs?.emaill === ''
-              ? 'Caso você não possua um e-mail cadastrado, qualquer pedido de mudança de senha será encaminhado para a moderação da plataforma.'
-              : null,
         },
       ],
       [

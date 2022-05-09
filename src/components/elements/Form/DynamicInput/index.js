@@ -1,27 +1,13 @@
+/* eslint-disable react/prop-types */
 /* eslint-disable react/require-default-props */
 /* eslint-disable react/forbid-prop-types */
-import React, {
-  useRef,
-  useState,
-  useMemo,
-  useCallback,
-  useEffect,
-  useReducer,
-} from 'react';
+import React, {useState, useMemo, useCallback, useEffect} from 'react';
 import PropTypes from 'prop-types';
 
 import {
-  Box,
-  Stack,
-  FormControl,
-  FormLabel,
   Input,
-  Radio,
-  RadioGroup,
   Select,
-  Button,
   Checkbox,
-  Text,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
@@ -224,9 +210,8 @@ const DynamicInput = ({
           {...validationProps}
           // numeric props
           min={0}
-          {...inputProps}
-          placeholder={placeholder && placeholder}>
-          <NumberInputField color="#000" />
+          {...inputProps}>
+          <NumberInputField color="#000" placeholder={placeholder} />
           <NumberInputStepper>
             <NumberIncrementStepper bg="gray.200" _active={{bg: 'gray.300'}} />
             <NumberDecrementStepper bg="gray.200" _active={{bg: 'gray.300'}} />
