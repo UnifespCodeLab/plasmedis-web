@@ -1,3 +1,4 @@
+/* eslint-disable no-alert */
 import React, {
   useRef,
   useState,
@@ -154,6 +155,48 @@ const RegisterUser = (...props) => {
   const buildForm = useCallback(() => {
     return (
       <>
+        <FormControl mb={4} isInvalid={!!errors?.name} errortext={errors?.name}>
+          <FormLabel color="#000">Nome</FormLabel>
+          <Input color="#000" {...register('name')} placeholder="Nome" />
+          <FormErrorMessage>
+            <Alert status="error">
+              <AlertIcon />
+              <AlertDescription>{errors?.name}</AlertDescription>
+            </Alert>
+          </FormErrorMessage>
+        </FormControl>
+
+        <FormControl
+          mb={4}
+          isInvalid={!!errors?.email}
+          errortext={errors?.email}>
+          <FormLabel color="#000">E-mail</FormLabel>
+          <Input
+            color="#000"
+            {...register('email')}
+            placeholder="E-mail"
+            type="email"
+          />
+          <FormErrorMessage>
+            <Alert status="error">
+              <AlertIcon />
+              <AlertDescription>{errors.email}</AlertDescription>
+            </Alert>
+          </FormErrorMessage>
+          {(isEmpty(inputs.email) || isNil(inputs.email)) && (
+            <FormHelperText color="yellow.700">
+              <Alert status="warning">
+                <AlertIcon />
+                <AlertDescription>
+                  Caso o usuário não possua um e-mail cadastrado, qualquer
+                  pedido de mudança de senha será encaminhado para a moderação
+                  da plataforma.
+                </AlertDescription>
+              </Alert>
+            </FormHelperText>
+          )}
+        </FormControl>
+
         <FormControl
           mb={4}
           isInvalid={!!errors.username}
@@ -163,7 +206,7 @@ const RegisterUser = (...props) => {
           <Input
             color="#000"
             {...register('username')}
-            placeholder="Username"
+            placeholder="nome.sobrenome"
           />
 
           {checkingUsernameAvailability ? (
@@ -197,47 +240,6 @@ const RegisterUser = (...props) => {
               )}
             </>
           )}
-        </FormControl>
-
-        <FormControl
-          mb={4}
-          isInvalid={!!errors?.email}
-          errortext={errors?.email}>
-          <FormLabel color="#000">E-mail</FormLabel>
-          <Input
-            color="#000"
-            {...register('email')}
-            placeholder="E-mail"
-            type="email"
-          />
-          <FormErrorMessage>
-            <Alert status="error">
-              <AlertIcon />
-              <AlertDescription>{errors.email}</AlertDescription>
-            </Alert>
-          </FormErrorMessage>
-          {(isEmpty(inputs.email) || isNil(inputs.email)) && (
-            <FormHelperText color="yellow.700">
-              <Alert status="warning">
-                <AlertIcon />
-                <AlertDescription>
-                  Caso o usuário não possua um e-mail cadastrado, qualquer
-                  pedido de mudança de senha será encaminhado para a moderação
-                  da plataforma.
-                </AlertDescription>
-              </Alert>
-            </FormHelperText>
-          )}
-        </FormControl>
-        <FormControl mb={4} isInvalid={!!errors?.name} errortext={errors?.name}>
-          <FormLabel color="#000">Nome</FormLabel>
-          <Input color="#000" {...register('name')} placeholder="Nome" />
-          <FormErrorMessage>
-            <Alert status="error">
-              <AlertIcon />
-              <AlertDescription>{errors?.name}</AlertDescription>
-            </Alert>
-          </FormErrorMessage>
         </FormControl>
 
         <FormControl
