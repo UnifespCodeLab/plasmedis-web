@@ -46,7 +46,7 @@ const RegisterUser = (...props) => {
     return Yup.object().shape({
       username: Yup.string()
         .matches(
-          /\S+([a-z])\S+\.([a-z]\S+)$/,
+          /\S+[a-z]\S+\.[a-z]\S+$/,
           'Nome de usuário inválido. Siga a regra: nome.sobrenome',
         )
         .required('O Nome de Usuário é obrigatório')
@@ -82,7 +82,9 @@ const RegisterUser = (...props) => {
           },
         ),
       email: Yup.string().email('Insira um e-mail válido'),
-      name: Yup.string().required('O Nome é obrigatório'),
+      name: Yup.string()
+        .matches(/^([^0-9]*)$/, 'O nome não deve conter números')
+        .required('O Nome é obrigatório'),
       password: Yup.string().required('A Senha é obrigatória'),
       type: Yup.number().required('O Tipo é obrigatório'),
     });
