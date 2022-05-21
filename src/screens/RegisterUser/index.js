@@ -45,6 +45,10 @@ const RegisterUser = (...props) => {
   const schema = useMemo(() => {
     return Yup.object().shape({
       username: Yup.string()
+        .matches(
+          /\S+([a-z])\S+\.([a-z]\S+)$/,
+          'Nome de usuário inválido. Siga a regra: nome.sobrenome',
+        )
         .required('O Nome de Usuário é obrigatório')
         .test(
           'checkUniqueUsername',
@@ -53,7 +57,6 @@ const RegisterUser = (...props) => {
           </span>,
           async (value) => {
             setCheckingUsernameAvailability(true);
-
             if (!isEmpty(value) && !isNil(value)) {
               try {
                 const unique = await Usuario.verifyUsername(token, value);
