@@ -10,6 +10,7 @@ import Logout from '../screens/Logout';
 import RecoverPassword from '../screens/RecoverPassword';
 import UserControl from '../screens/Admin/UserControl';
 import Categories from '../screens/Categories';
+import UseGuide from '../screens/UseGuide';
 import Perfil from '../screens/Perfil';
 
 function Routes() {
@@ -22,6 +23,7 @@ function Routes() {
         <PrivateRoute path="/perfil" component={Perfil} />
         <PrivateRoute path="/register" component={RegisterUser} />
         <PrivateRoute path="/categorias" component={Categories} />
+        <PrivateRoute path="/guia-de-uso" component={UseGuide} />
         <PrivateRoute path="/logout" component={Logout} />
         <PrivateRoute
           exact
