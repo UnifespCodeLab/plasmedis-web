@@ -82,34 +82,46 @@ const Default = ({children} = {}) => {
           <ModalBody pb={6}>
             <div>
               <p>
-                Lorem amet cillum qui amet eiusmod velit adipisicing ut est
-                culpa commodo. Velit est velit culpa elit deserunt nulla ullamco
-                minim. Ea aliquip excepteur consectetur anim non ipsum veniam
-                Lorem amet ullamco cupidatat id enim sit. Tempor culpa ad sint
-                occaecat ad minim. Pariatur consequat duis nisi ullamco ea magna
-                magna minim.
+                Olá, integrantes da Comunidade Virtual de Aprendizagem TEA NO
+                ENSINO SUPERIOR.
               </p>
               <br />
 
               <p>
-                Aute culpa adipisicing qui consequat. Ipsum aute velit tempor
-                labore in id pariatur aliquip. Sit anim ut aliquip aliqua do
-                nisi fugiat nulla deserunt aute Lorem. Sint sit id exercitation
-                commodo minim quis culpa ullamco ex est voluptate.
+                Esta comunidade tem como objetivo promover a integração entre
+                professores universitários de alunos com TEA e especialistas em
+                inclusão para o nível superior. Nesta comunidade os
+                participantes podem interagir postando mensagens com tema
+                especificamente relacionados a pessoas com TEA na fase adulta e
+                que estejam cursando universidade. Aqui o integrante poderá
+                postar mensagens, curtir e comentar as postagens de outros.
+                Também será permitido desabafar sobre as dificuldades pessoais
+                em lidar com o tema, bem como oferecer apoio.
               </p>
               <br />
 
               <p>
-                Sint excepteur esse cupidatat fugiat eiusmod duis deserunt
-                mollit nostrud cupidatat dolore pariatur magna commodo. Enim
-                deserunt sunt reprehenderit deserunt ad. Fugiat nostrud ad
-                labore magna qui proident dolore consectetur amet id eiusmod
-                laboris. Laboris id proident eu sit Lorem dolor nulla aliqua
-                irure irure commodo dolore dolor. Nisi aliquip aliqua minim ad
-                labore eu deserunt minim ipsum nisi. Sint magna aute tempor elit
-                Lorem pariatur reprehenderit. Ad ad cupidatat cillum officia ea
-                non in culpa ut.
+                As mensagens podem conter: informações, dúvidas, elogios,
+                sugestões, dicas, publicações de eventos e outros assuntos
+                referentes ao tema.
               </p>
+
+              <p>
+                Nesta comunidade não é permitido postagens inadequadas, com teor
+                ofensivo, incitação ao ódio, qualquer tipo de pornografia ou
+                mensagem de duplo sentido, violência, aliciamento político, ou
+                qualquer outro tipo de mensagem que cause constrangimento ou
+                infrinja as leis. Não é permitido postar palavras de baixo
+                calão, correntes, ativismo político e/ou religioso.
+              </p>
+              <br />
+
+              <p>
+                Caso uma das regras seja infringida, o conteúdo postado será
+                removido, e a pessoa responsável pela postagem será advertida.
+                Havendo reincidência, o integrante será excluído.
+              </p>
+              <br />
             </div>
           </ModalBody>
 
