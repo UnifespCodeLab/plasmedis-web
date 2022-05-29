@@ -18,8 +18,10 @@ const UseGuide = (...props) => {
         boxShadow="0px 0.25rem 0.25rem 0px rgba(0, 0, 0, 0.25)">
         <div>
           <p>
-            Olá, integrantes da Comunidade Virtual de Aprendizagem TEA NO ENSINO
-            SUPERIOR.
+            <strong>
+              Olá, integrantes da Comunidade Virtual de Aprendizagem TEA NO
+              ENSINO SUPERIOR.
+            </strong>
           </p>
           <br />
 
@@ -59,7 +61,9 @@ const UseGuide = (...props) => {
           </p>
           <br />
 
-          <p>Papel dos participantes</p>
+          <p>
+            <strong>Papel dos participantes</strong>
+          </p>
           <br />
 
           <p>
