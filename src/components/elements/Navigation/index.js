@@ -9,6 +9,7 @@ import {
   mdiAccountSupervisor,
   mdiApplicationCog,
   mdiAccount,
+  mdiInformation,
 } from '@mdi/js';
 
 import {Box} from '@chakra-ui/layout';
@@ -34,6 +35,12 @@ const essentialsSection = [
     title: 'Perfil',
     icon: mdiAccount,
     to: '/perfil',
+  },
+  {
+    title: 'Guia de uso',
+    icon: mdiInformation,
+    to: '/guia-de-uso',
+    type_alowed: [1, 2, 3],
   },
 ];
 
