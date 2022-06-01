@@ -349,7 +349,7 @@ const UserControl = () => {
         {
           name: 'tempo_trabalho_tea',
           path: 'data.tempo_trabalho_tea',
-          label: 'Tempo de Trabalho TEA',
+          label: 'Tempo de Trabalho TEA em anos',
           type: 'numeric',
           required: false,
         },
