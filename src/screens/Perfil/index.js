@@ -269,7 +269,7 @@ const Perfil = (...props) => {
         {
           name: 'tempo_trabalho_tea',
           path: 'data.tempo_trabalho_tea',
-          label: 'Tempo de Trabalho TEA',
+          label: 'Tempo de Trabalho TEA em anos',
           placeholder: 'Ex: 2',
           type: 'numeric',
           required: false,
