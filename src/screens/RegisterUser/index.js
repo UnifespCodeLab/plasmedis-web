@@ -83,9 +83,7 @@ const RegisterUser = (...props) => {
           },
         ),
       email: Yup.string().email('Insira um e-mail válido'),
-      name: Yup.string()
-        .matches(/^([^0-9]*)$/, 'O nome não deve conter números')
-        .required('O Nome é obrigatório'),
+      name: Yup.string().required('O Nome é obrigatório'),
       password: Yup.string().required('A Senha é obrigatória'),
       type: Yup.number().required('O Tipo é obrigatório'),
     });
@@ -371,7 +369,7 @@ const RegisterUser = (...props) => {
   return (
     <S.Wrapper px={{base: 0, lg: 6}}>
       <Text color="#2f7384" fontSize="2xl" fontWeight={600} marginBottom={4}>
-        Cadastrar Novos Usuários
+        Cadastrar Novo Usuários
       </Text>
       <Box
         borderRadius={10}
