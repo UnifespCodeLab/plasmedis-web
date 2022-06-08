@@ -104,7 +104,7 @@ const Perfil = (...props) => {
             return false;
           },
         ),
-      email: Yup.string().email('Insira um e-mail válido'),
+      // email: Yup.string().email('Insira um e-mail válido'),
       name: Yup.string().required('O Nome é obrigatório'),
       current_password: Yup.string(),
       password: Yup.string(),
