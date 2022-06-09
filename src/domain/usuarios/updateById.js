@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import {isEmpty, isNil} from 'lodash';
+import {isEmpty, isNil, get} from 'lodash';
 import api from '../../services/api';
 
 export default async function updateById(token, userId, objectToSend) {
@@ -33,12 +33,14 @@ export default async function updateById(token, userId, objectToSend) {
       data,
     };
 
-    await api.put(`users/${userId}`, obj, {
+    const response = await api.put(`users/${userId}`, obj, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    alert('Informações Atualizadas!');
+
+    if (get(response, 'data.success', false)) alert('Informações Atualizadas!');
+    else alert(get(response, 'data.message', 'Erro ao submeter informações'));
   } catch (e) {
     alert('Erro ao submeter informações');
   }
