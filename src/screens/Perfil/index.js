@@ -379,9 +379,10 @@ const Perfil = (...props) => {
     if (isNil(token) || isEmpty(token)) return;
 
     if (!hasData && dataWarning.current === false) {
-      alert(
-        'Você deve terminar de preencher seu perfil para continuar usando a plataforma.',
-      );
+      console.error('DATA WARNING');
+      // alert(
+      //   'Você deve terminar de preencher seu perfil para continuar usando a plataforma.',
+      // );
       dataWarning.current = true;
     }
 

@@ -40,15 +40,15 @@ const Provider = ({children} = {}) => {
 
       Auth.me(token).then((authenticatedUser) => {
         if (isNull(hasData)) {
+          console.error('NO hasData');
           // verificar se o usuário possui um perfil completo (data preenchida), se nao possuir, redirecionar para meu perfil com um aviso (redirecionar em PrivateRoute)
-          setHasData(get(authenticatedUser, 'has_data', false));
+          // setHasData(get(authenticatedUser, 'has_data', false));
         }
 
         if (isNull(hasAcceptedTerms)) {
+          console.error('NO hasAcceptedTerms');
           // verificiar se o usuário aceitos os termos de uso, se não aceitou, mostrar o modal com os termos pedindo o acete (no layout default)
-          setHasAcceptedTerms(
-            get(authenticatedUser, 'has_accepted_terms', false),
-          );
+          // setHasAcceptedTerms(get(authenticatedUser, 'has_accepted_terms', false));
         }
       });
     }

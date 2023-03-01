@@ -205,7 +205,7 @@ const DynamicInput = ({
         <NumberInput
           name={name}
           type="numeric"
-          value={controlledValue}
+          value={controlledValue ?? 0}
           onChange={(newValue) => propagateOnChange(parseInt(newValue, 10))}
           {...validationProps}
           // numeric props

@@ -24,9 +24,9 @@ function Entrar({history} = {}) {
   async function handleLogin(params) {
     try {
       setLoading(true);
-      const {data} = await login(params);
+      try {
+        const {data} = await login(params);
 
-      if (data.status === 1000) {
         if (has(data, 'token') && has(data, 'user')) {
           setToken(data.token);
 
@@ -46,7 +46,9 @@ function Entrar({history} = {}) {
         } else {
           toast.error('Login não retornou token ou usuário!');
         }
-      } else {
+      } catch (error) {
+        // TODO: Adaptar chamada para versão pós-statusCode
+        console.error(error);
         toast.error('Usuário ou senha incorretos!');
       }
     } catch (error) {
