@@ -101,7 +101,8 @@ const Navigation = ({user}) => {
     setSettings(null);
 
     const fetchSettings = async () => {
-      setSettings(await Settings.web(token));
+      const obj = await Settings.web(token);
+      setSettings(obj);
     };
 
     fetchSettings();
@@ -131,7 +132,9 @@ const Navigation = ({user}) => {
           if (!byUserPrivilege) return false;
           if (isNil(settings) && item.wait_settings) return false;
 
-          const bySettings = get(settings, `visible.${item.to}`, true); // visible by default
+          // TODO: Descomentar essa parte. Ta comentado por enquanto pra testar com praticidade, mas teoricamente o settings do banco define se a tela aparece ou nao
+          // const bySettings = get(settings, `visible.${item.to}`, true); // visible by default
+          const bySettings = true;
 
           return byUserPrivilege && bySettings;
         }),

@@ -12,8 +12,6 @@ export async function web(token) {
       },
     });
 
-    if (!get(response, 'data.success', false)) return null;
-
     return {
       id: get(response, 'data.settings.id'),
       version: get(response, 'data.settings.version', '0.0'),
