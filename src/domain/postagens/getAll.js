@@ -15,29 +15,34 @@ export default async function getAll(
   if (recommended != null) queryString.recommended = recommended;
   if (category != null) queryString.category = category;
 
-  const posts = await api.get(`posts${stringify(queryString)}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  try {
+    const posts = await api.get(`posts${stringify(queryString)}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-  if (!has(posts, 'data')) return null;
+    if (!has(posts, 'data')) return null;
 
-  return get(posts, 'data.posts', []).map((post) => ({
-    id: get(post, 'id'),
-    title: get(post, 'titulo'),
-    description: get(post, 'texto'),
-    category: {
-      id: get(post, 'categoria'),
-      name: '<API NÃO ESTÁ ENVIANDO>',
-    },
-    author: {
-      id: get(post, 'created.user'),
-      name: get(post, 'created.name'),
-      avatar: '<API NÃO ESTÁ ENVIANDO>',
-    },
-    dateTime: moment(`${get(post, 'created.date')}Z`),
-    verified: get(post, 'selo'),
-    comments: get(post, 'comments_count', 0),
-  }));
+    return get(posts, 'data.posts', []).map((post) => ({
+      id: get(post, 'id'),
+      title: get(post, 'titulo'),
+      description: get(post, 'texto'),
+      category: {
+        id: get(post, 'categoria'),
+        name: '<API NÃO ESTÁ ENVIANDO>',
+      },
+      author: {
+        id: get(post, 'created.user'),
+        name: get(post, 'created.name'),
+        avatar: '<API NÃO ESTÁ ENVIANDO>',
+      },
+      dateTime: moment(`${get(post, 'created.date')}Z`),
+      verified: get(post, 'selo'),
+      comments: get(post, 'comments_count', 0),
+    }));
+  } catch (error) {
+    alert('Erro ao buscar as postagens');
+    return null;
+  }
 }
