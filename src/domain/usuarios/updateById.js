@@ -39,9 +39,8 @@ export default async function updateById(token, userId, objectToSend) {
       },
     });
 
-    if (get(response, 'data.success', false)) alert('Informações Atualizadas!');
-    else alert(get(response, 'data.message', 'Erro ao submeter informações'));
+    alert('Informações Atualizadas!');
   } catch (e) {
-    alert('Erro ao submeter informações');
+    throw new Error('Erro ao submeter informações');
   }
 }
