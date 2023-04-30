@@ -523,6 +523,25 @@ const UserControl = () => {
         </Button>
       </Flex>
 
+      <Flex
+        direction="row"
+        ml={4}
+        mb={4}
+        alignItems="center"
+        hidden={selectedMultipleUsers.length < 1}>
+        <S.Text color="#2f7384" mr={4}>
+          {selectedMultipleUsers.length > 1
+            ? `${selectedMultipleUsers.length} Usuários Selecionados`
+            : `${selectedMultipleUsers.length} Usuário Selecionado`}
+        </S.Text>
+        <Button
+          colorScheme="primary"
+          isLoading={loading}
+          onClick={() => setSelectedMultipleUsers([])}>
+          Limpar
+        </Button>
+      </Flex>
+
       <Box
         borderRadius={10}
         bg={{base: 'white', lg: 'white'}}
@@ -547,10 +566,12 @@ const UserControl = () => {
                   <Td justifyContent="center" textAlign="center">
                     <Checkbox
                       size="lg"
+                      colorScheme="primary"
                       borderColor="primary.600"
                       onChange={(event) =>
                         handleCheckboxChange(event, currentUser.id)
                       }
+                      isChecked={selectedMultipleUsers.includes(currentUser.id)}
                     />
                   </Td>
                   <Td>{currentUser.id}</Td>
