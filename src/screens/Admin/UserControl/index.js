@@ -35,6 +35,7 @@ import {
   useDisclosure,
   IconButton,
   Spinner,
+  Checkbox,
 } from '@chakra-ui/react';
 import {Button} from '@chakra-ui/button';
 import {useHistory} from 'react-router-dom';
@@ -70,6 +71,8 @@ const UserControl = () => {
     useState(false);
   const [usernameChecked, setUsernamedChecked] = useState(null);
   const latestCheckUniqueUsername = useRef(null);
+
+  const [selectedMultipleUsers, setSelectedMultipleUsers] = useState([]);
 
   const selectUser = useCallback(
     (userRow) => {
@@ -469,6 +472,19 @@ const UserControl = () => {
     [filterUsers],
   );
 
+  const handleCheckboxChange = useCallback(
+    (event, id) => {
+      const {checked} = event.target;
+
+      if (checked) {
+        setSelectedMultipleUsers((old) => [...old, id]);
+      } else {
+        setSelectedMultipleUsers((old) => old.filter((item) => item !== id));
+      }
+    },
+    [selectedMultipleUsers],
+  );
+
   return (
     <S.Wrapper px={{base: 0, lg: 4}}>
       <S.Text color="#2f7384" fontSize="2xl" fontWeight={600} marginBottom={4}>
@@ -515,6 +531,7 @@ const UserControl = () => {
         <Table variant="striped" color="black" colorScheme="blackAlpha">
           <Thead>
             <Tr bg="primary.600">
+              <Th color="white">Selecionar</Th>
               <Th color="white">ID</Th>
               <Th color="white">Nome</Th>
               <Th color="white">Email</Th>
@@ -527,6 +544,15 @@ const UserControl = () => {
             {users &&
               users.map((currentUser) => (
                 <Tr key={currentUser.id}>
+                  <Td justifyContent="center" textAlign="center">
+                    <Checkbox
+                      size="lg"
+                      borderColor="primary.600"
+                      onChange={(event) =>
+                        handleCheckboxChange(event, currentUser.id)
+                      }
+                    />
+                  </Td>
                   <Td>{currentUser.id}</Td>
                   <Td>{currentUser.username}</Td>
                   <Td>{currentUser.email}</Td>
