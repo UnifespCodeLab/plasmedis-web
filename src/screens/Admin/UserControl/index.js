@@ -485,6 +485,8 @@ const UserControl = () => {
     [selectedMultipleUsers],
   );
 
+  const updateMultipleUsersStatus = useCallback();
+
   return (
     <S.Wrapper px={{base: 0, lg: 4}}>
       <S.Text color="#2f7384" fontSize="2xl" fontWeight={600} marginBottom={4}>
@@ -525,7 +527,6 @@ const UserControl = () => {
 
       <Flex
         direction="row"
-        ml={4}
         mb={4}
         alignItems="center"
         hidden={selectedMultipleUsers.length < 1}>
@@ -536,6 +537,13 @@ const UserControl = () => {
         </S.Text>
         <Button
           colorScheme="primary"
+          mr={4}
+          isLoading={loading}
+          onClick={() => updateMultipleUsersStatus()}>
+          Desativar
+        </Button>
+        <Button
+          colorScheme="blackAlpha"
           isLoading={loading}
           onClick={() => setSelectedMultipleUsers([])}>
           Limpar
