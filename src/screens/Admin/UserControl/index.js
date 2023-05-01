@@ -485,7 +485,11 @@ const UserControl = () => {
     [selectedMultipleUsers],
   );
 
-  const updateMultipleUsersStatus = useCallback();
+  const updateMultipleUsersStatus = useCallback(() => {
+    for (const userId of selectedMultipleUsers)
+      updateUserStatus({value: 'inativar'}, userId);
+    setSelectedMultipleUsers([]);
+  }, [selectedMultipleUsers, updateUserStatus]);
 
   return (
     <S.Wrapper px={{base: 0, lg: 4}}>
