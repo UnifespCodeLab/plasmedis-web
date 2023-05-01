@@ -40,7 +40,7 @@ import {
 import {Button} from '@chakra-ui/button';
 import {useHistory} from 'react-router-dom';
 import {Flex} from '@chakra-ui/layout';
-import {MdEdit} from 'react-icons/md';
+import {MdEdit, MdPersonAdd} from 'react-icons/md';
 import * as Yup from 'yup';
 import {toast} from 'react-toastify';
 import * as S from './styles';
@@ -529,29 +529,44 @@ const UserControl = () => {
         </Button>
       </Flex>
 
-      <Flex
-        direction="row"
-        mb={4}
-        alignItems="center"
-        hidden={selectedMultipleUsers.length < 1}>
-        <S.Text color="#2f7384" mr={4}>
-          {selectedMultipleUsers.length > 1
-            ? `${selectedMultipleUsers.length} Usuários Selecionados`
-            : `${selectedMultipleUsers.length} Usuário Selecionado`}
-        </S.Text>
-        <Button
+      <Flex direction="row" mb={4} alignItems="center" justify="space-between">
+        {/* <IconButton
           colorScheme="primary"
           mr={4}
-          isLoading={loading}
-          onClick={() => updateMultipleUsersStatus()}>
-          Desativar
-        </Button>
+          size="md"
+          fontSize="xl"
+          icon={<Icon as={MdPersonAdd} />}
+          onClick={() => filterUsers()}
+        /> */}
         <Button
-          colorScheme="blackAlpha"
+          colorScheme="primary"
           isLoading={loading}
-          onClick={() => setSelectedMultipleUsers([])}>
-          Limpar
+          leftIcon={<Icon as={MdPersonAdd} fontSize={25} />}
+          onClick={() => {}}>
+          Cadastrar
         </Button>
+        <Flex direction="row" hidden={selectedMultipleUsers.length < 1}>
+          <S.Text color="#2f7384" mr={4} mt={2}>
+            {selectedMultipleUsers.length > 1
+              ? `${selectedMultipleUsers.length} Usuários Selecionados`
+              : `${selectedMultipleUsers.length} Usuário Selecionado`}
+          </S.Text>
+          <Button
+            colorScheme="primary"
+            mr={4}
+            isLoading={loading}
+            width={90}
+            onClick={() => updateMultipleUsersStatus()}>
+            Desativar
+          </Button>
+          <Button
+            colorScheme="blackAlpha"
+            isLoading={loading}
+            width={90}
+            onClick={() => setSelectedMultipleUsers([])}>
+            Limpar
+          </Button>
+        </Flex>
       </Flex>
 
       <Box
