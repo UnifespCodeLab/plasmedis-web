@@ -13,7 +13,7 @@ export default async function getAll(token) {
     },
   });
 
-  if (!has(comentarios, 'data')) return null;
+  if (comentarios.status === 400) return null;
 
   return get(comentarios, 'data.comments', []).map((comentario) => ({
     id: get(comentario, 'id'),

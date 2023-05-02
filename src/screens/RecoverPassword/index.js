@@ -16,17 +16,44 @@ const schema = Yup.object().shape({
   user: Yup.string().required('O nome de usuário/e-mail é obrigatório'),
 });
 
+toast.configure();
+
+const isEmail = (email) => {
+  return email.match(
+    /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+  );
+};
+
+const createPayload = (user) => {
+  if (isEmail(user)) {
+    return {email: user};
+  }
+  return {username: user};
+};
+
 const RecoverPassword = (...props) => {
   const [loading, setLoading] = useState(false);
 
   async function handleRecoverPassword(params) {
     setLoading(true);
     try {
-      const {data} = await resetPassword(params);
+      const {user} = params;
 
-      alert(data);
+      const payload = createPayload(user);
+
+      const response = await resetPassword(payload);
+
+      const {message} = response.data;
+      toast.success(message);
     } catch (error) {
-      alert('Erro interno!');
+      const {status} = error.response;
+      const {message} = error.response.data;
+
+      if (status === 404)
+        toast.error('Este nome de usuário ou email não existe');
+      else if (status === 403)
+        toast.error('Sem permissão para redefinir a senha desse usuário');
+      else toast.error(message);
     } finally {
       setLoading(false);
     }

@@ -121,13 +121,21 @@ const UserControl = () => {
 
             if (!isEmpty(value) && !isNil(value)) {
               try {
-                const unique = await Usuarios.verifyUsername(token, value);
+                await Usuarios.verifyUsername(token, value);
 
                 setCheckingUsernameAvailability(false);
                 setUsernamedChecked(value);
-                latestCheckUniqueUsername.current = unique;
-                return unique;
-              } catch {
+                latestCheckUniqueUsername.current = true;
+                return true;
+              } catch (error) {
+                const {status} = error.response;
+                if (status === 400) {
+                  setUsernamedChecked(value);
+                  setCheckingUsernameAvailability(false);
+                  latestCheckUniqueUsername.current = true;
+                  return false;
+                }
+
                 alert(
                   'Não foi possível verificar a disponibilidade do nome de usuário',
                 ); // TODO: transformar em alert amigável
@@ -417,11 +425,19 @@ const UserControl = () => {
     async (target, userId) => {
       switch (target.value) {
         case 'ativar':
-          await Usuarios.updateById(token, userId, {active: true});
+          try {
+            await Usuarios.updateById(token, userId, {active: true});
+          } catch (error) {
+            alert('Não foi possível salvar a alteração.');
+          }
           break;
 
         case 'inativar':
-          await Usuarios.updateById(token, userId, {active: false});
+          try {
+            await Usuarios.updateById(token, userId, {active: false});
+          } catch (error) {
+            alert('Não foi possível salvar a alteração.');
+          }
           break;
 
         default:
