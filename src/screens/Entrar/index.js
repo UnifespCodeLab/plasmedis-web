@@ -17,6 +17,8 @@ const schema = Yup.object().shape({
   password: Yup.string().required('A senha é obrigatória'),
 });
 
+toast.configure();
+
 function Entrar({history} = {}) {
   const [loading, setLoading] = useState(false);
   const {setToken, setUser} = useContext(AuthContext);
@@ -25,7 +27,9 @@ function Entrar({history} = {}) {
     try {
       setLoading(true);
       try {
-        const {data} = await login(params);
+        const response = await login(params);
+
+        const {data} = response;
 
         if (has(data, 'token') && has(data, 'user')) {
           setToken(data.token);
@@ -47,9 +51,8 @@ function Entrar({history} = {}) {
           toast.error('Login não retornou token ou usuário!');
         }
       } catch (error) {
-        // TODO: Adaptar chamada para versão pós-statusCode
-        console.error(error);
-        toast.error('Usuário ou senha incorretos!');
+        const {status} = error.response;
+        if (status === 404) toast.error('Usuário ou senha incorretos!');
       }
     } catch (error) {
       toast.error('Erro interno!');

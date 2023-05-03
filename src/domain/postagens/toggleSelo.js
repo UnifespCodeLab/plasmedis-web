@@ -16,6 +16,7 @@ export default async function toggleSelo(token, postagemId) {
 
     return get(response, 'data.status');
   } catch (e) {
+    alert('Erro ao emitir selo');
     return null;
   }
 }

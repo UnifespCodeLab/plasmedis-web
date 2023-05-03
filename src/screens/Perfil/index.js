@@ -82,13 +82,21 @@ const Perfil = (...props) => {
 
             if (!isEmpty(value) && !isNil(value)) {
               try {
-                const unique = await Usuario.verifyUsername(token, value);
+                await Usuario.verifyUsername(token, value);
 
                 setCheckingUsernameAvailability(false);
                 setUsernamedChecked(value);
-                latestCheckUniqueUsername.current = unique;
-                return unique;
-              } catch {
+                latestCheckUniqueUsername.current = true;
+                return true;
+              } catch (error) {
+                const {status} = error.response;
+                if (status === 400) {
+                  setUsernamedChecked(value);
+                  setCheckingUsernameAvailability(false);
+                  latestCheckUniqueUsername.current = true;
+                  return false;
+                }
+
                 alert(
                   'Não foi possível verificar a disponibilidade do nome de usuário',
                 ); // TODO: transformar em alert amigável
