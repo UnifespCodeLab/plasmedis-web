@@ -15,6 +15,12 @@ import {
   Alert,
   AlertIcon,
   AlertDescription,
+  AlertDialog,
+  AlertDialogOverlay,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogBody,
+  AlertDialogFooter,
   Box,
   FormErrorMessage,
   FormHelperText,
@@ -43,21 +49,27 @@ import {useHistory} from 'react-router-dom';
 import {Flex} from '@chakra-ui/layout';
 import {MdEdit, MdPersonAdd, MdLockReset} from 'react-icons/md';
 import * as Yup from 'yup';
+import 'react-toastify/dist/ReactToastify.css';
 import {toast} from 'react-toastify';
 import * as S from './styles';
 
 import Form from '../../../components/elements/Form';
 
 import * as Usuarios from '../../../domain/usuarios';
+import resetPassword from '../../../domain/resetPassword';
 import * as Privilegios from '../../../domain/privilegios';
 
 import {Context as AuthContext} from '../../../components/stores/Auth';
+
+toast.configure();
 
 const UserControl = () => {
   const {user, token} = useContext(AuthContext);
   const history = useHistory();
 
   const {isOpen, onOpen, onClose} = useDisclosure();
+  const recoverAlert = useDisclosure();
+  const cancelRef = useRef();
   const [users, setUsers] = useState(null);
   const [typeData, setTypeData] = useState([]);
 
@@ -140,9 +152,9 @@ const UserControl = () => {
                   return false;
                 }
 
-                alert(
+                toast.error(
                   'Não foi possível verificar a disponibilidade do nome de usuário',
-                ); // TODO: transformar em alert amigável
+                );
 
                 setUsernamedChecked(value);
                 setCheckingUsernameAvailability(false);
@@ -212,9 +224,9 @@ const UserControl = () => {
                   return false;
                 }
 
-                alert(
+                toast.error(
                   'Não foi possível verificar a disponibilidade do nome de usuário',
-                ); // TODO: transformar em alert amigável
+                );
 
                 setUsernamedChecked(value);
                 setCheckingUsernameAvailability(false);
@@ -640,7 +652,7 @@ const UserControl = () => {
           try {
             await Usuarios.updateById(token, userId, {active: true});
           } catch (error) {
-            alert('Não foi possível salvar a alteração.');
+            toast.error('Não foi possível salvar a alteração.');
           }
           break;
 
@@ -648,7 +660,7 @@ const UserControl = () => {
           try {
             await Usuarios.updateById(token, userId, {active: false});
           } catch (error) {
-            alert('Não foi possível salvar a alteração.');
+            toast.error('Não foi possível salvar a alteração.');
           }
           break;
 
@@ -715,6 +727,26 @@ const UserControl = () => {
       updateUserStatus({value: 'inativar'}, userId);
     setSelectedMultipleUsers([]);
   }, [selectedMultipleUsers, updateUserStatus]);
+
+  const handleResetPassword = useCallback(
+    async (event, username) => {
+      try {
+        const response = await resetPassword({username});
+        const {message} = response.data;
+        toast.success(message);
+      } catch (error) {
+        const {status} = error.response;
+        const {message} = error.response.data;
+
+        if (status === 404)
+          toast.error('Este nome de usuário ou email não existe');
+        else if (status === 403)
+          toast.error('Sem permissão para redefinir a senha desse usuário');
+        else toast.error(message);
+      }
+    },
+    [selectedUser],
+  );
 
   return (
     <S.Wrapper px={{base: 0, lg: 4}}>
@@ -860,7 +892,10 @@ const UserControl = () => {
                         icon={<Icon as={MdEdit} />}
                       />
                       <IconButton
-                        onClick={(event) => {}}
+                        onClick={(event) => {
+                          selectUser(currentUser);
+                          recoverAlert.onOpen(event);
+                        }}
                         size="sm"
                         colorScheme="primary"
                         icon={<Icon as={MdLockReset} fontSize={20} />}
@@ -872,6 +907,41 @@ const UserControl = () => {
           </Tbody>
         </Table>
       </Box>
+
+      <AlertDialog
+        isOpen={recoverAlert.isOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={(event) => {
+          setSelectedUser(null);
+          recoverAlert.onClose(event);
+        }}
+        motionPreset="slideInBottom">
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Recuperar Senha
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              Deseja realmente restaurar a senha do usuário{' '}
+              {selectedUser?.username}?
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button mr={2} ref={cancelRef} onClick={recoverAlert.onClose}>
+                Cancelar
+              </Button>
+              <Button
+                colorScheme="primary"
+                onClick={(event) =>
+                  handleResetPassword(event, selectedUser.username)
+                }>
+                Recuperar
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
 
       {/* Modal de Editar Perfil */}
       {/* align-items: start;
@@ -931,7 +1001,7 @@ const UserControl = () => {
                         onClose();
                       })
                       .catch(() => {
-                        alert('Não foi possível salvar as alterações.');
+                        toast.error('Não foi possível salvar as alterações.');
                         setSavingUser(false);
                         onClose();
                       });
@@ -977,7 +1047,7 @@ const UserControl = () => {
                         onClose();
                       })
                       .catch(() => {
-                        alert('Não foi possível criar o usuário.');
+                        toast.error('Não foi possível criar o usuário.');
                         setSavingUser(false);
                         onClose();
                       });
