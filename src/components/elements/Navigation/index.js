@@ -74,12 +74,6 @@ const informationSection = [
   //   to: '/form',
   //   type_alowed: [1, 2, 3],
   // },
-  {
-    title: 'Cadastrar Novo Usuário',
-    icon: mdiAccountPlus,
-    to: '/register',
-    type_alowed: [1],
-  },
 ];
 
 const logoutSection = [
