@@ -41,7 +41,7 @@ import {
 import {Button} from '@chakra-ui/button';
 import {useHistory} from 'react-router-dom';
 import {Flex} from '@chakra-ui/layout';
-import {MdEdit, MdPersonAdd} from 'react-icons/md';
+import {MdEdit, MdPersonAdd, MdLockReset} from 'react-icons/md';
 import * as Yup from 'yup';
 import {toast} from 'react-toastify';
 import * as S from './styles';
@@ -848,15 +848,24 @@ const UserControl = () => {
                     </Select>
                   </Td>
                   <Td>
-                    <IconButton
-                      onClick={(event) => {
-                        selectUser(currentUser);
-                        onOpen(event);
-                      }}
-                      size="sm"
-                      colorScheme="primary"
-                      icon={<Icon as={MdEdit} />}
-                    />
+                    <Flex direction="row">
+                      <IconButton
+                        onClick={(event) => {
+                          selectUser(currentUser);
+                          onOpen(event);
+                        }}
+                        size="sm"
+                        mr={2}
+                        colorScheme="primary"
+                        icon={<Icon as={MdEdit} />}
+                      />
+                      <IconButton
+                        onClick={(event) => {}}
+                        size="sm"
+                        colorScheme="primary"
+                        icon={<Icon as={MdLockReset} fontSize={20} />}
+                      />
+                    </Flex>
                   </Td>
                 </Tr>
               ))}
