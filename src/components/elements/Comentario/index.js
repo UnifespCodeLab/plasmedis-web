@@ -28,12 +28,14 @@ const Comentario = ({item, onDelete: onDeleteProp} = {}) => {
       </Box>
       <Box p={{base: 3, lg: 3}} background="#ddd" borderRadius="10px">
         <Stack direction="row" justifyContent="space-between">
-          <Text mb={4} fontWeight="bold" fontSize="xs" color="black">
-            {item.author?.name}
-            <Text fontSize="xs" color="gray">
+          <Flex direction="column">
+            <Text fontWeight="bold" fontSize="xs" color="black">
+              {item.author?.name}
+            </Text>
+            <Text mb={4} fontSize="xs" color="gray">
               {item.dateTime.fromNow()}
             </Text>
-          </Text>
+          </Flex>
           {checkIfIsAbleToDelete() ? (
             <FiTrashIcon size={15} onClick={onDelete} />
           ) : (
@@ -57,13 +59,13 @@ Comentario.defaultProps = {
 };
 Comentario.propTypes = {
   item: PropTypes.shape({
-    author: {
-      id: PropTypes.string,
+    author: PropTypes.shape({
+      id: PropTypes.number,
       name: PropTypes.string,
       avatar: PropTypes.string,
-    },
+    }),
     id: PropTypes.number,
-    post: PropTypes.string,
+    post: PropTypes.number,
     dateTime: PropTypes.object.isRequired, // TODO: invoke moment object type
     body: PropTypes.string,
   }),
