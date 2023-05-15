@@ -214,8 +214,8 @@ function Home() {
           user={user}
           canVerifyPost={canVerifyPostTypeIds.includes(user.type)}
           fetchComments={async (id) => {
-            const post = await Postagens.get(token, id);
-            return post?.comments ?? [];
+            const commentsPage = await Comentarios.getByPostId(token, id);
+            return commentsPage.comments;
           }}
           onCreateComment={(newComment, itemId) => {
             return Comentarios.create(token, newComment, itemId); // TODO: show error/success message

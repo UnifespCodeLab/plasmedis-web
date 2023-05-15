@@ -279,9 +279,8 @@ const Postagem = ({
                     size="md"
                     isInvalid={newCommentInvalid}
                   />
-                  <mdiSend />
                   <IconButton
-                    disable={creatingComment}
+                    isDisabled={creatingComment}
                     ml={4}
                     colorScheme="primary"
                     icon={<Icon fontSize="2xl" as={MdSend} />}
