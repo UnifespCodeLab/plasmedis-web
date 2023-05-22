@@ -4,6 +4,8 @@ import {useHistory, Link} from 'react-router-dom';
 import {Icon} from '@mdi/react';
 import {Box} from '@chakra-ui/layout';
 import {
+  Flex,
+  Select,
   IconButton,
   Text,
   Table,
@@ -59,6 +61,19 @@ function Categories() {
         <Text color="#2f7384" fontSize="2xl" fontWeight={600} marginBottom={4}>
           Gerenciar Categorias
         </Text>
+
+        <Flex direction="row" mb={4} alignItems="center" justifyContent="right">
+          <Text mr={4}>Número de registros</Text>
+          <Select
+            width={90}
+            value={limit}
+            onChange={(event) => setLimit(event.target.value)}>
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </Select>
+        </Flex>
 
         <Box
           bg={{base: 'white', lg: 'white'}}
