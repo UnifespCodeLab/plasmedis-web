@@ -20,6 +20,8 @@ import {Context as AuthContext} from '../../components/stores/Auth';
 
 function Categories() {
   const {user, token} = useContext(AuthContext);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(5);
   const [categories, setCategories] = useState(null);
   const history = useHistory();
 
@@ -33,12 +35,12 @@ function Categories() {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const result = await Categorias.getAll(token);
-      setCategories(result);
+      const result = await Categorias.getAll(token, page, limit);
+      setCategories(result.categories);
     };
 
     fetchCategories();
-  }, [token]);
+  }, [token, page, limit]);
 
   const removeCategory = useCallback(
     async (id) => {
