@@ -25,7 +25,7 @@ function Categories() {
   const {user, token} = useContext(AuthContext);
   const [pageMetadata, setPageMetadata] = useState({});
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(1);
+  const [limit, setLimit] = useState(5);
   const [categories, setCategories] = useState(null);
   const history = useHistory();
 
@@ -44,6 +44,7 @@ function Categories() {
       setPageMetadata({
         count: result.count,
         current: result.current,
+        limit: result.limit,
         next: result.next,
         previous: result.previous,
       });
@@ -123,7 +124,7 @@ function Categories() {
             </Tbody>
           </Table>
         </Box>
-        <PageSelector metadata={pageMetadata} />
+        <PageSelector metadata={pageMetadata} onChangePage={setPage} />
       </Box>
     </>
   );

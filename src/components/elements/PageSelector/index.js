@@ -10,72 +10,66 @@ import {
 } from 'react-icons/md';
 import {Icon} from '@chakra-ui/react';
 
-const PageSelector = ({metadata} = {}) => {
+const PageSelector = ({metadata, onChangePage} = {}) => {
   return (
-    <Flex mt={4} alignItems="center" justifyContent="center">
-      <Flex p={{base: 3, lg: 3}} borderRadius="10px">
-        {metadata.current - 1 > 1 ? (
-          <>
-            <IconButton
-              backgroundColor="#F0F6F8"
-              mr={2}
-              icon={<Icon as={MdFirstPage} fontSize={25} />}
-            />
-            <IconButton
-              backgroundColor="#F0F6F8"
-              mr={2}
-              icon={<Icon as={MdNavigateBefore} fontSize={25} />}
-            />
-            <Button backgroundColor="#F0F6F8" mr={2}>
-              {metadata.current - 1}
-            </Button>
-          </>
-        ) : metadata.previous ? (
-          <>
-            <IconButton
-              backgroundColor="#F0F6F8"
-              mr={2}
-              icon={<Icon as={MdNavigateBefore} fontSize={25} />}
-            />
-            <Button backgroundColor="#F0F6F8" mr={2}>
-              {metadata.current - 1}
-            </Button>
-          </>
-        ) : (
-          <></>
-        )}
-        <Button colorScheme="primary">{metadata.current}</Button>
-        {metadata.current + 1 < metadata.count ? (
-          <>
-            <Button backgroundColor="#F0F6F8" ml={2}>
-              {metadata.current + 1}
-            </Button>
-            <IconButton
-              backgroundColor="#F0F6F8"
-              ml={2}
-              icon={<Icon as={MdNavigateNext} fontSize={25} />}
-            />
-            <IconButton
-              backgroundColor="#F0F6F8"
-              ml={2}
-              icon={<Icon as={MdLastPage} fontSize={25} />}
-            />
-          </>
-        ) : metadata.next ? (
-          <>
-            <Button backgroundColor="#F0F6F8" ml={2}>
-              {metadata.current + 1}
-            </Button>
-            <IconButton
-              backgroundColor="#F0F6F8"
-              ml={2}
-              icon={<Icon as={MdNavigateNext} fontSize={25} />}
-            />
-          </>
-        ) : (
-          <></>
-        )}
-      </Flex>
+    <Flex mt={6} alignItems="center" justifyContent="center">
+      <IconButton
+        backgroundColor="#F0F6F8"
+        mr={1}
+        icon={<Icon as={MdFirstPage} fontSize={25} />}
+        onClick={() => onChangePage(1)}
+        hidden={metadata.current - 1 <= 1}
+      />
+      <IconButton
+        backgroundColor="#F0F6F8"
+        mr={1}
+        icon={<Icon as={MdNavigateBefore} fontSize={25} />}
+        onClick={() => onChangePage(metadata.current - 1)}
+        hidden={!metadata.previous}
+      />
+      <Button
+        backgroundColor="#F0F6F8"
+        ml={1}
+        onClick={() => onChangePage(metadata.current - 2)}
+        hidden={metadata.current - 2 < 1}>
+        {metadata.current - 2}
+      </Button>
+      <Button
+        backgroundColor="#F0F6F8"
+        mr={1}
+        onClick={() => onChangePage(metadata.current - 1)}
+        hidden={!metadata.previous}>
+        {metadata.current - 1}
+      </Button>
+      <Button colorScheme="primary">{metadata.current}</Button>
+      <Button
+        backgroundColor="#F0F6F8"
+        ml={1}
+        onClick={() => onChangePage(metadata.current + 1)}
+        hidden={!metadata.next}>
+        {metadata.current + 1}
+      </Button>
+      <Button
+        backgroundColor="#F0F6F8"
+        ml={1}
+        onClick={() => onChangePage(metadata.current + 2)}
+        hidden={(metadata.current + 2) * metadata.limit > metadata.count}>
+        {metadata.current + 2}
+      </Button>
+      <IconButton
+        backgroundColor="#F0F6F8"
+        ml={1}
+        icon={<Icon as={MdNavigateNext} fontSize={25} />}
+        onClick={() => onChangePage(metadata.current + 1)}
+        hidden={!metadata.next}
+      />
+      <IconButton
+        backgroundColor="#F0F6F8"
+        ml={1}
+        icon={<Icon as={MdLastPage} fontSize={25} />}
+        onClick={() => onChangePage(metadata.count)}
+        hidden={(metadata.current + 1) * metadata.limit >= metadata.count}
+      />
     </Flex>
   );
 };
@@ -83,14 +77,17 @@ const PageSelector = ({metadata} = {}) => {
 PageSelector.displayName = 'PageSelector';
 PageSelector.defaultProps = {
   metadata: {},
+  onChangePage: () => {},
 };
 PageSelector.propTypes = {
-  metadata: {
+  metadata: PropTypes.shape({
     count: PropTypes.number,
     current: PropTypes.number,
+    limit: PropTypes.number,
     next: PropTypes.string,
     previous: PropTypes.string,
-  },
+  }),
+  onChangePage: PropTypes.func,
 };
 
 export default PageSelector;
