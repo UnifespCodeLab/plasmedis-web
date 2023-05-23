@@ -17,13 +17,15 @@ import {
 } from '@chakra-ui/react';
 
 import {mdiDeleteOutline} from '@mdi/js';
+import PageSelector from '../../components/elements/PageSelector';
 import * as Categorias from '../../domain/categorias';
 import {Context as AuthContext} from '../../components/stores/Auth';
 
 function Categories() {
   const {user, token} = useContext(AuthContext);
+  const [pageMetadata, setPageMetadata] = useState({});
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(5);
+  const [limit, setLimit] = useState(1);
   const [categories, setCategories] = useState(null);
   const history = useHistory();
 
@@ -39,6 +41,12 @@ function Categories() {
     const fetchCategories = async () => {
       const result = await Categorias.getAll(token, page, limit);
       setCategories(result.categories);
+      setPageMetadata({
+        count: result.count,
+        current: result.current,
+        next: result.next,
+        previous: result.previous,
+      });
     };
 
     fetchCategories();
@@ -115,6 +123,7 @@ function Categories() {
             </Tbody>
           </Table>
         </Box>
+        <PageSelector metadata={pageMetadata} />
       </Box>
     </>
   );
