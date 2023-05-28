@@ -45,6 +45,7 @@ import {toast} from 'react-toastify';
 import * as S from './styles';
 
 import Form from '../../../components/elements/Form';
+import PageSelector from '../../../components/elements/PageSelector';
 
 import * as Usuarios from '../../../domain/usuarios';
 import * as Privilegios from '../../../domain/privilegios';
@@ -54,6 +55,10 @@ import {Context as AuthContext} from '../../../components/stores/Auth';
 const UserControl = () => {
   const {user, token} = useContext(AuthContext);
   const history = useHistory();
+
+  const [pageMetadata, setPageMetadata] = useState({});
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
 
   const {isOpen, onOpen, onClose} = useDisclosure();
   const [users, setUsers] = useState(null);
@@ -393,25 +398,30 @@ const UserControl = () => {
   useEffect(() => {
     const fetch = async () => {
       // eslint-disable-next-line no-shadow
-      const users = Usuarios.getAll(token);
+      const result = await Usuarios.getAll(token, page, limit);
       const types = await Privilegios.getAll(token);
 
       setTypeData(types);
 
-      const result = (await users).users;
-
       // eslint-disable-next-line no-shadow
-      result.map((user, index) => {
+      result.users.map((user, index) => {
         user.index = index;
         user.typeName =
           types.find((type) => type.id === user.type)?.type ?? '???';
       });
 
-      setUsers(result);
+      setUsers(result.users);
+      setPageMetadata({
+        count: result.count,
+        current: result.current,
+        limit: result.limit,
+        next: result.next,
+        previous: result.previous,
+      });
     };
 
     fetch();
-  }, [token]);
+  }, [token, page, limit]);
 
   useEffect(() => {
     const canEditUsers = [1, 2];
@@ -523,6 +533,22 @@ const UserControl = () => {
         </Button>
       </Flex>
 
+      <Flex direction="row" mb={4} alignItems="center" justifyContent="right">
+        <S.Text mr={4}>Número de registros</S.Text>
+        <Select
+          width={90}
+          value={limit}
+          onChange={(event) => {
+            setLimit(event.target.value);
+            setPage(1);
+          }}>
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
+        </Select>
+      </Flex>
+
       <Box
         borderRadius={10}
         bg={{base: 'white', lg: 'white'}}
@@ -577,6 +603,7 @@ const UserControl = () => {
           </Tbody>
         </Table>
       </Box>
+      <PageSelector metadata={pageMetadata} onChangePage={setPage} />
 
       {/* Modal de Editar Perfil */}
       {/* align-items: start;
