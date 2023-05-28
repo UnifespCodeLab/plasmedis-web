@@ -67,7 +67,7 @@ const PageSelector = ({metadata, onChangePage} = {}) => {
         backgroundColor="#F0F6F8"
         ml={1}
         icon={<Icon as={MdLastPage} fontSize={25} />}
-        onClick={() => onChangePage(metadata.count)}
+        onClick={() => onChangePage(Math.ceil(metadata.count / metadata.limit))}
         hidden={(metadata.current + 1) * metadata.limit >= metadata.count}
       />
     </Flex>
