@@ -76,7 +76,10 @@ function Categories() {
           <Select
             width={90}
             value={limit}
-            onChange={(event) => setLimit(event.target.value)}>
+            onChange={(event) => {
+              setLimit(event.target.value);
+              setPage(1);
+            }}>
             <option value="5">5</option>
             <option value="10">10</option>
             <option value="20">20</option>
