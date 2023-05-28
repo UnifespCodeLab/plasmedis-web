@@ -25,7 +25,7 @@ function Categories() {
   const {user, token} = useContext(AuthContext);
   const [pageMetadata, setPageMetadata] = useState({});
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(5);
+  const [limit, setLimit] = useState(10);
   const [categories, setCategories] = useState(null);
   const history = useHistory();
 
