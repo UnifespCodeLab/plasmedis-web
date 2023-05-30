@@ -111,17 +111,24 @@ const Postagem = ({
     (id, pageNumber) => {
       if (numberOfComments > 0) setLoadingComments(true);
 
-      console.log('fetchAndUpdateComments', id, pageNumber);
       fetchComments(id, pageNumber).then((page) => {
-        setComments((prevComments) => [...prevComments, ...page.comments]);
-        setCurrentPage(pageNumber);
+        setComments((prevComments) => {
+          const newComments = page.comments.filter(
+            (comment) =>
+              !prevComments.some(
+                (prevComment) => prevComment.id === comment.id,
+              ),
+          );
+          return [...prevComments, ...newComments].sort((a, b) => b.id - a.id);
+        });
+        setCurrentPage(pageNumber >= currentPage ? pageNumber : currentPage);
         setNumberOfComments(page.count);
-        setLoadMoreComments(!isEmpty(page.next));
+        setLoadMoreComments(!isEmpty(page.next) && pageNumber >= currentPage);
         setLoadingComments(false);
         setCreatingComment(false);
       });
     },
-    [fetchComments, numberOfComments, comments],
+    [fetchComments, numberOfComments, comments, currentPage],
   );
 
   const checkIfUserCanDeletePost = () => {
@@ -182,6 +189,7 @@ const Postagem = ({
       Comments.delete(token, commentId)
         .then(() => {
           setComments(comments.filter((comment) => comment.id !== commentId));
+          setNumberOfComments(numberOfComments - 1);
           alert('Comentário removido');
         })
         .catch(() => {
@@ -296,7 +304,7 @@ const Postagem = ({
                         setNewCommentInvalid(false);
                         onCreateComment(newComment, item.id).then(() => {
                           setNumberOfComments(numberOfComments + 1);
-                          fetchAndUpdateComments(item.id);
+                          fetchAndUpdateComments(item.id, 1);
                         });
                         setNewComment('');
                       } else {
