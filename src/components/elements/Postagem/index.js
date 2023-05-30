@@ -121,7 +121,7 @@ const Postagem = ({
         setCreatingComment(false);
       });
     },
-    [fetchComments, numberOfComments],
+    [fetchComments, numberOfComments, comments],
   );
 
   const checkIfUserCanDeletePost = () => {
