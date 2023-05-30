@@ -1,21 +1,29 @@
 import {get, has, isEmpty, isNil, isString} from 'lodash';
 import moment from 'moment';
+import stringify from '../../utils/stringify';
 
 import api from '../../services/api';
 
-export default async function getAll(token, post) {
+export default async function getAll(token, post, page, limit) {
   if (isNil(token) || isEmpty(token))
     throw new Error('Token não foi informado');
 
   if (isNil(post) || (isEmpty(post) && isString(post)))
     throw new Error('Id do post não foi informado');
 
+  const queryString = {};
+  if (page != null) queryString.page = page;
+  if (limit != null) queryString.limit = limit;
+
   try {
-    const comentarios = await api.get(`comments/post/${post}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
+    const comentarios = await api.get(
+      `comments/post/${post}${stringify(queryString)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       },
-    });
+    );
 
     if (comentarios.status === 400) return [];
 

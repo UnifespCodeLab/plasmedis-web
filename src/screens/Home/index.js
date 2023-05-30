@@ -108,14 +108,14 @@ function Home() {
     // recuperando lista de categorias para tabs
 
     const fetchCategories = async () => {
-      const result = await Categorias.getAll(token);
+      const result = await Categorias.getAll(token, 1, 50);
 
       if (isNull(result)) return;
 
-      setCategories(result);
+      setCategories(result.categories);
       setTabs(
         ['Feed', 'Recomendados'].concat(
-          result
+          result.categories
             .filter((category) => category.id !== 0)
             .map((category) => category.name),
         ),
@@ -213,9 +213,15 @@ function Home() {
         <Feed
           user={user}
           canVerifyPost={canVerifyPostTypeIds.includes(user.type)}
-          fetchComments={async (id) => {
-            const commentsPage = await Comentarios.getByPostId(token, id);
-            return commentsPage.comments;
+          fetchComments={async (id, page) => {
+            const limit = 2;
+            const commentsPage = await Comentarios.getByPostId(
+              token,
+              id,
+              page,
+              limit,
+            );
+            return commentsPage;
           }}
           onCreateComment={(newComment, itemId) => {
             return Comentarios.create(token, newComment, itemId); // TODO: show error/success message

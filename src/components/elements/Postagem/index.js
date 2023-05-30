@@ -28,7 +28,7 @@ import ReactHtmlParser from 'react-html-parser';
 
 import {Button} from '@chakra-ui/button';
 import Icon from '@chakra-ui/icon';
-import {get, isNil, isString} from 'lodash';
+import {get, isEmpty, isNil, isString} from 'lodash';
 
 import * as User from '../../../domain/usuarios';
 import {deleteById} from '../../../domain/postagens';
@@ -56,10 +56,12 @@ const Postagem = ({
   const [newCommentInvalid, setNewCommentInvalid] = useState(false);
   const [creatingComment, setCreatingComment] = useState(false);
 
-  const [comments, setComments] = useState(null);
+  const [comments, setComments] = useState([]);
   const [loadingComments, setLoadingComments] = useState(false);
 
   const [numberOfComments, setNumberOfComments] = useState(item?.comments);
+  const [loadMoreComments, setLoadMoreComments] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [verifyingPost, setVerifyingPost] = useState(false);
 
@@ -106,12 +108,15 @@ const Postagem = ({
   }, [item]);
 
   const fetchAndUpdateComments = useCallback(
-    (id) => {
+    (id, pageNumber) => {
       if (numberOfComments > 0) setLoadingComments(true);
 
-      fetchComments(id).then((list) => {
-        setComments(list);
-        setNumberOfComments(list.length);
+      console.log('fetchAndUpdateComments', id, pageNumber);
+      fetchComments(id, pageNumber).then((page) => {
+        setComments((prevComments) => [...prevComments, ...page.comments]);
+        setCurrentPage(pageNumber);
+        setNumberOfComments(page.count);
+        setLoadMoreComments(!isEmpty(page.next));
         setLoadingComments(false);
         setCreatingComment(false);
       });
@@ -141,8 +146,8 @@ const Postagem = ({
 
   // se comments está nulo (ainda não houve um fetch com sucesso da api)
   useEffect(() => {
-    if (openComments && item?.id && comments === null)
-      fetchAndUpdateComments(item?.id);
+    if (openComments && item?.id && comments.length === 0)
+      fetchAndUpdateComments(item?.id, currentPage);
   }, [openComments, item, comments, fetchAndUpdateComments]);
 
   const toggleVerifyPost = useCallback(() => {
@@ -301,19 +306,33 @@ const Postagem = ({
                   />
                 </Flex>
                 <Stack spacing={4}>
-                  {loadingComments && (
-                    <Box w="100%" textAlign="center">
-                      <Spinner colorScheme="primary.main" />
-                    </Box>
-                  )}
-                  {(comments ?? []).map((comment, index) => (
+                  {comments.map((comment, index) => (
                     <Comentario
                       key={index}
                       item={comment}
                       onDelete={() => onCommentDelete(comment.id)}
                     />
                   ))}
+                  {loadingComments && (
+                    <Box w="100%" textAlign="center">
+                      <Spinner colorScheme="primary.main" />
+                    </Box>
+                  )}
                 </Stack>
+                {loadMoreComments && (
+                  <Flex justify="center" align="center">
+                    <Button
+                      onClick={() => {
+                        setLoadMoreComments(false);
+                        fetchAndUpdateComments(item.id, currentPage + 1);
+                      }}
+                      colorScheme="primary"
+                      size="sm"
+                      mt={4}>
+                      Carregar mais comentários
+                    </Button>
+                  </Flex>
+                )}
               </Box>
             )}
           </Stack>
