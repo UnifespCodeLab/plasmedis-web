@@ -60,8 +60,8 @@ const Postagem = ({
   const [loadingComments, setLoadingComments] = useState(false);
 
   const [numberOfComments, setNumberOfComments] = useState(item?.comments);
-  const [loadMoreComments, setLoadMoreComments] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [loadMoreComments, setLoadMoreComments] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
 
   const [verifyingPost, setVerifyingPost] = useState(false);
 
@@ -123,7 +123,7 @@ const Postagem = ({
         });
         setCurrentPage(pageNumber >= currentPage ? pageNumber : currentPage);
         setNumberOfComments(page.count);
-        setLoadMoreComments(!isEmpty(page.next) && pageNumber >= currentPage);
+        setLoadMoreComments(!isEmpty(page.next) && loadMoreComments);
         setLoadingComments(false);
         setCreatingComment(false);
       });
@@ -154,7 +154,7 @@ const Postagem = ({
   // se comments está nulo (ainda não houve um fetch com sucesso da api)
   useEffect(() => {
     if (openComments && item?.id && comments.length === 0)
-      fetchAndUpdateComments(item?.id, currentPage);
+      fetchAndUpdateComments(item?.id, 1);
   }, [openComments, item, comments, fetchAndUpdateComments]);
 
   const toggleVerifyPost = useCallback(() => {
@@ -327,7 +327,7 @@ const Postagem = ({
                     </Box>
                   )}
                 </Stack>
-                {loadMoreComments && (
+                {loadMoreComments && currentPage > 0 && (
                   <Flex justify="center" align="center">
                     <Button
                       onClick={() => {
