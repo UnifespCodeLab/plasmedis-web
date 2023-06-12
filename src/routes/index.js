@@ -5,7 +5,6 @@ import PrivateRoute from './PrivateRoute';
 
 import Entrar from '../screens/Entrar';
 import Home from '../screens/Home';
-import RegisterUser from '../screens/RegisterUser';
 import Logout from '../screens/Logout';
 import RecoverPassword from '../screens/RecoverPassword';
 import UserControl from '../screens/Admin/UserControl';
@@ -21,7 +20,6 @@ function Routes() {
         <Route path="/esqueci-minha-senha" component={RecoverPassword} />
         <PrivateRoute exact path="/" component={Home} />
         <PrivateRoute path="/perfil" component={Perfil} />
-        <PrivateRoute path="/register" component={RegisterUser} />
         <PrivateRoute path="/categorias" component={Categories} />
         <PrivateRoute path="/guia-de-uso" component={UseGuide} />
         <PrivateRoute path="/logout" component={Logout} />
