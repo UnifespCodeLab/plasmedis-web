@@ -57,6 +57,10 @@ function Categories() {
     async (id) => {
       try {
         await Categorias.deleteById(token, id);
+        // delete from categories state
+        setCategories((list) => {
+          return list.filter((category) => category.id !== id);
+        });
       } catch (e) {
         alert(e.message);
       }
