@@ -15,7 +15,14 @@ import {
   Alert,
   AlertIcon,
   AlertDescription,
+  AlertDialog,
+  AlertDialogOverlay,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogBody,
+  AlertDialogFooter,
   Box,
+  FormErrorMessage,
   FormHelperText,
   Modal,
   ModalOverlay,
@@ -35,12 +42,14 @@ import {
   useDisclosure,
   IconButton,
   Spinner,
+  Checkbox,
 } from '@chakra-ui/react';
 import {Button} from '@chakra-ui/button';
 import {useHistory} from 'react-router-dom';
 import {Flex} from '@chakra-ui/layout';
-import {MdEdit} from 'react-icons/md';
+import {MdEdit, MdPersonAdd, MdLockReset} from 'react-icons/md';
 import * as Yup from 'yup';
+import 'react-toastify/dist/ReactToastify.css';
 import {toast} from 'react-toastify';
 import * as S from './styles';
 
@@ -48,9 +57,12 @@ import Form from '../../../components/elements/Form';
 import PageSelector from '../../../components/elements/PageSelector';
 
 import * as Usuarios from '../../../domain/usuarios';
+import resetPassword from '../../../domain/resetPassword';
 import * as Privilegios from '../../../domain/privilegios';
 
 import {Context as AuthContext} from '../../../components/stores/Auth';
+
+toast.configure();
 
 const UserControl = () => {
   const {user, token} = useContext(AuthContext);
@@ -61,6 +73,8 @@ const UserControl = () => {
   const [limit, setLimit] = useState(10);
 
   const {isOpen, onOpen, onClose} = useDisclosure();
+  const recoverAlert = useDisclosure();
+  const cancelRef = useRef();
   const [users, setUsers] = useState(null);
   const [typeData, setTypeData] = useState([]);
 
@@ -75,6 +89,8 @@ const UserControl = () => {
     useState(false);
   const [usernameChecked, setUsernamedChecked] = useState(null);
   const latestCheckUniqueUsername = useRef(null);
+
+  const [selectedMultipleUsers, setSelectedMultipleUsers] = useState([]);
 
   const selectUser = useCallback(
     (userRow) => {
@@ -141,9 +157,9 @@ const UserControl = () => {
                   return false;
                 }
 
-                alert(
+                toast.error(
                   'Não foi possível verificar a disponibilidade do nome de usuário',
-                ); // TODO: transformar em alert amigável
+                );
 
                 setUsernamedChecked(value);
                 setCheckingUsernameAvailability(false);
@@ -181,6 +197,67 @@ const UserControl = () => {
     });
   }, [selectedUser, token]);
 
+  const creationSchema = useMemo(() => {
+    return Yup.object().shape({
+      username: Yup.string()
+        .matches(
+          /\S+[a-z]\S+\.[a-z]\S+$/,
+          'Nome de usuário inválido. Siga a regra: nome.sobrenome',
+        )
+        .required('O campo "Nome de Usuário" é obrigatório')
+        .test(
+          'checkUniqueUsername',
+          <span>
+            Esse nome de usuário <b>não</b> está disponível
+          </span>,
+          async (value) => {
+            setCheckingUsernameAvailability(true);
+            if (!isEmpty(value) && !isNil(value)) {
+              try {
+                await Usuarios.verifyUsername(token, value);
+
+                setCheckingUsernameAvailability(false);
+                setUsernamedChecked(value);
+                latestCheckUniqueUsername.current = true;
+                return true;
+              } catch (error) {
+                const {status} = error.response;
+                if (status === 400) {
+                  setUsernamedChecked(value);
+                  setCheckingUsernameAvailability(false);
+                  latestCheckUniqueUsername.current = true;
+                  return false;
+                }
+
+                toast.error(
+                  'Não foi possível verificar a disponibilidade do nome de usuário',
+                );
+
+                setUsernamedChecked(value);
+                setCheckingUsernameAvailability(false);
+                latestCheckUniqueUsername.current = true;
+                return true;
+              }
+            }
+
+            setCheckingUsernameAvailability(false);
+            return false;
+          },
+        ),
+      email: Yup.string().email('Insira um e-mail válido'),
+      name: Yup.string().required('O campo "Nome" é obrigatório'),
+      password: Yup.string().required('O campo "Senha" é obrigatório'),
+      type: Yup.string()
+        .required('O campo "Tipo" é obrigatório, selecione outra opção')
+        .test(
+          // Check if it is not type "" (empty string)
+          'checkType',
+          'O campo "Tipo" é obrigatório',
+          (value) => !isEmpty(value),
+        ),
+    });
+  }, [selectedUser, token]);
+
   // FORM UPKEEPING
   const [errors, setErrors] = useState({});
   const setError = useCallback(
@@ -200,7 +277,110 @@ const UserControl = () => {
     [setInputs, inputs],
   );
 
-  const form = useMemo(
+  const creationForm = useMemo(
+    () => [
+      {
+        name: 'name',
+        path: 'name',
+        label: 'Nome',
+        type: 'text',
+      },
+      {
+        name: 'email',
+        path: 'email',
+        type: 'email',
+        label: 'E-mail',
+        helperStatus: 'warning',
+        helperText: (isNil(inputs?.email) || isEmpty(inputs?.email)) && (
+          <FormHelperText color="yellow.700">
+            <Alert status="warning">
+              <AlertIcon />
+              <AlertDescription>
+                Caso o usuário não possua um e-mail cadastrado, qualquer pedido
+                de mudança de senha será encaminhado para a moderação da
+                plataforma.
+              </AlertDescription>
+            </Alert>
+          </FormHelperText>
+        ),
+      },
+      {
+        name: 'username',
+        path: 'username',
+        type: 'text',
+        label: 'Nome de Usuário',
+        helperText: (
+          <>
+            {checkingUsernameAvailability ? (
+              <FormHelperText
+                display="flex"
+                flexDirection="row"
+                alignItems="center">
+                <Spinner size="xs" colorScheme="primary" mr={2} />
+                Verificando disponibilidade do nome de usuário
+              </FormHelperText>
+            ) : (
+              <>
+                {!isNil(errors.username) && !isEmpty(errors.username) ? (
+                  <FormErrorMessage>
+                    <Alert status="error">
+                      <AlertIcon />
+                      <AlertDescription>{errors.username}</AlertDescription>
+                    </Alert>
+                  </FormErrorMessage>
+                ) : (
+                  inputs?.username === usernameChecked && (
+                    <FormHelperText color="green.700">
+                      <Alert status="success">
+                        <AlertIcon />
+                        <AlertDescription>
+                          Esse nome de usuário está disponível
+                        </AlertDescription>
+                      </Alert>
+                    </FormHelperText>
+                  )
+                )}
+              </>
+            )}
+          </>
+        ),
+      },
+      {
+        name: 'password',
+        path: 'password',
+        type: 'password',
+        label: 'Senha',
+      },
+      {
+        name: 'type',
+        path: 'type',
+        type: 'select',
+        label: 'Tipo de Usuário',
+        options: [
+          {
+            text: 'Selecione uma opção',
+            value: '',
+          },
+          {
+            text: 'Participante',
+            value: '3',
+          },
+          {
+            text: 'Moderador',
+            value: '2',
+          },
+          {
+            text: 'Administrador',
+            value: '1',
+          },
+        ],
+        defaultValue: '',
+      },
+    ],
+    [inputs, usernameChecked, checkingUsernameAvailability],
+  );
+
+  const updateForm = useMemo(
     () => [
       [
         {
@@ -227,7 +407,29 @@ const UserControl = () => {
                     </AlertDescription>
                   </Alert>
                 </FormHelperText>
-              ) : null}
+              ) : (
+                <>
+                  {!isNil(errors.username) && !isEmpty(errors.username) ? (
+                    <FormErrorMessage>
+                      <Alert status="error">
+                        <AlertIcon />
+                        <AlertDescription>{errors.username}</AlertDescription>
+                      </Alert>
+                    </FormErrorMessage>
+                  ) : (
+                    inputs?.username === usernameChecked && (
+                      <FormHelperText color="green.700">
+                        <Alert status="success">
+                          <AlertIcon />
+                          <AlertDescription>
+                            Esse nome de usuário está disponível
+                          </AlertDescription>
+                        </Alert>
+                      </FormHelperText>
+                    )
+                  )}
+                </>
+              )}
             </>
           ),
         },
@@ -237,10 +439,18 @@ const UserControl = () => {
           type: 'email',
           label: 'E-mail',
           helperStatus: 'warning',
-          helperText:
-            isNil(inputs?.email == null) || inputs?.emaill === ''
-              ? 'Caso você não possua um e-mail cadastrado, qualquer pedido de mudança de senha será encaminhado para a moderação da plataforma.'
-              : null,
+          helperText: (isNil(inputs?.email) || isEmpty(inputs?.email)) && (
+            <FormHelperText color="yellow.700">
+              <Alert status="warning">
+                <AlertIcon />
+                <AlertDescription>
+                  Caso o usuário não possua um e-mail cadastrado, qualquer
+                  pedido de mudança de senha será encaminhado para a moderação
+                  da plataforma.
+                </AlertDescription>
+              </Alert>
+            </FormHelperText>
+          ),
         },
       ],
       {
@@ -375,11 +585,13 @@ const UserControl = () => {
         },
       ],
     ],
-    [],
+    [inputs, usernameChecked, checkingUsernameAvailability],
   );
 
   const handleChange = useCallback(
-    (name, value, event, input) => setInput(input.path, value),
+    (name, value, event, input) => {
+      setInput(input.path, value);
+    },
     [setInput],
   );
 
@@ -393,6 +605,18 @@ const UserControl = () => {
       }
     },
     [schema, setError],
+  );
+
+  const handleCreationValidate = useCallback(
+    async (name, value, event, input) => {
+      try {
+        await creationSchema.validateAt(name, {[name]: value});
+        setError(name, null);
+      } catch (error) {
+        setError(name, error.message);
+      }
+    },
+    [creationSchema, setError],
   );
 
   useEffect(() => {
@@ -421,7 +645,7 @@ const UserControl = () => {
     };
 
     fetch();
-  }, [token, page, limit]);
+  }, [token, page, limit, savingUser]);
 
   useEffect(() => {
     const canEditUsers = [1, 2];
@@ -438,7 +662,7 @@ const UserControl = () => {
           try {
             await Usuarios.updateById(token, userId, {active: true});
           } catch (error) {
-            alert('Não foi possível salvar a alteração.');
+            toast.error('Não foi possível salvar a alteração.');
           }
           break;
 
@@ -446,7 +670,7 @@ const UserControl = () => {
           try {
             await Usuarios.updateById(token, userId, {active: false});
           } catch (error) {
-            alert('Não foi possível salvar a alteração.');
+            toast.error('Não foi possível salvar a alteração.');
           }
           break;
 
@@ -495,11 +719,93 @@ const UserControl = () => {
     [filterUsers],
   );
 
+  const handleCheckboxChange = useCallback(
+    (event, id) => {
+      const {checked} = event.target;
+
+      if (checked) {
+        setSelectedMultipleUsers((old) => [...old, id]);
+      } else {
+        setSelectedMultipleUsers((old) => old.filter((item) => item !== id));
+      }
+    },
+    [selectedMultipleUsers],
+  );
+
+  const updateMultipleUsersStatus = useCallback(() => {
+    for (const userId of selectedMultipleUsers)
+      updateUserStatus({value: 'inativar'}, userId);
+    setSelectedMultipleUsers([]);
+  }, [selectedMultipleUsers, updateUserStatus]);
+
+  const handleResetPassword = useCallback(
+    async (event, username) => {
+      try {
+        const response = await resetPassword({username});
+        const {message} = response.data;
+        toast.success(message);
+      } catch (error) {
+        const {status} = error.response;
+        const {message} = error.response.data;
+
+        if (status === 404)
+          toast.error('Este nome de usuário ou email não existe');
+        else if (status === 403)
+          toast.error('Sem permissão para redefinir a senha desse usuário');
+        else toast.error(message);
+      }
+    },
+    [selectedUser],
+  );
+
   return (
     <S.Wrapper px={{base: 0, lg: 4}}>
       <S.Text color="#2f7384" fontSize="2xl" fontWeight={600} marginBottom={4}>
         Controle de usuários
       </S.Text>
+
+      <Flex direction="row" mb={4} alignItems="center" justify="space-between">
+        {/* <IconButton
+          colorScheme="primary"
+          mr={4}
+          size="md"
+          fontSize="xl"
+          icon={<Icon as={MdPersonAdd} />}
+          onClick={() => filterUsers()}
+        /> */}
+        <Button
+          colorScheme="primary"
+          isLoading={loading}
+          leftIcon={<Icon as={MdPersonAdd} fontSize={25} />}
+          onClick={() => {
+            setInputs(null);
+            onOpen();
+          }}>
+          Cadastrar
+        </Button>
+        <Flex direction="row" hidden={selectedMultipleUsers.length < 1}>
+          <S.Text color="#2f7384" mr={4} mt={2}>
+            {selectedMultipleUsers.length > 1
+              ? `${selectedMultipleUsers.length} Usuários Selecionados`
+              : `${selectedMultipleUsers.length} Usuário Selecionado`}
+          </S.Text>
+          <Button
+            colorScheme="primary"
+            mr={4}
+            isLoading={loading}
+            width={90}
+            onClick={() => updateMultipleUsersStatus()}>
+            Desativar
+          </Button>
+          <Button
+            colorScheme="blackAlpha"
+            isLoading={loading}
+            width={90}
+            onClick={() => setSelectedMultipleUsers([])}>
+            Limpar
+          </Button>
+        </Flex>
+      </Flex>
 
       <Flex direction="row" mb={4} alignItems="center">
         <Input
@@ -557,6 +863,7 @@ const UserControl = () => {
         <Table variant="striped" color="black" colorScheme="blackAlpha">
           <Thead>
             <Tr bg="primary.600">
+              <Th color="white">Selecionar</Th>
               <Th color="white">ID</Th>
               <Th color="white">Nome</Th>
               <Th color="white">Email</Th>
@@ -569,6 +876,17 @@ const UserControl = () => {
             {users &&
               users.map((currentUser) => (
                 <Tr key={currentUser.id}>
+                  <Td justifyContent="center" textAlign="center">
+                    <Checkbox
+                      size="lg"
+                      colorScheme="primary"
+                      borderColor="primary.600"
+                      onChange={(event) =>
+                        handleCheckboxChange(event, currentUser.id)
+                      }
+                      isChecked={selectedMultipleUsers.includes(currentUser.id)}
+                    />
+                  </Td>
                   <Td>{currentUser.id}</Td>
                   <Td>{currentUser.username}</Td>
                   <Td>{currentUser.email}</Td>
@@ -588,15 +906,27 @@ const UserControl = () => {
                     </Select>
                   </Td>
                   <Td>
-                    <IconButton
-                      onClick={(event) => {
-                        selectUser(currentUser);
-                        onOpen(event);
-                      }}
-                      size="sm"
-                      colorScheme="primary"
-                      icon={<Icon as={MdEdit} />}
-                    />
+                    <Flex direction="row">
+                      <IconButton
+                        onClick={(event) => {
+                          selectUser(currentUser);
+                          onOpen(event);
+                        }}
+                        size="sm"
+                        mr={2}
+                        colorScheme="primary"
+                        icon={<Icon as={MdEdit} />}
+                      />
+                      <IconButton
+                        onClick={(event) => {
+                          selectUser(currentUser);
+                          recoverAlert.onOpen(event);
+                        }}
+                        size="sm"
+                        colorScheme="primary"
+                        icon={<Icon as={MdLockReset} fontSize={20} />}
+                      />
+                    </Flex>
                   </Td>
                 </Tr>
               ))}
@@ -604,6 +934,41 @@ const UserControl = () => {
         </Table>
       </Box>
       <PageSelector metadata={pageMetadata} onChangePage={setPage} />
+
+      <AlertDialog
+        isOpen={recoverAlert.isOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={(event) => {
+          setSelectedUser(null);
+          recoverAlert.onClose(event);
+        }}
+        motionPreset="slideInBottom">
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Recuperar Senha
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              Deseja realmente restaurar a senha do usuário{' '}
+              {selectedUser?.username}?
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button mr={2} ref={cancelRef} onClick={recoverAlert.onClose}>
+                Cancelar
+              </Button>
+              <Button
+                colorScheme="primary"
+                onClick={(event) =>
+                  handleResetPassword(event, selectedUser.username)
+                }>
+                Recuperar
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
 
       {/* Modal de Editar Perfil */}
       {/* align-items: start;
@@ -626,7 +991,7 @@ const UserControl = () => {
               <ModalCloseButton />
               <ModalBody pb={6}>
                 <Form
-                  inputs={form}
+                  inputs={updateForm}
                   errors={errors}
                   value={inputs}
                   onChange={handleChange}
@@ -663,12 +1028,11 @@ const UserControl = () => {
                         onClose();
                       })
                       .catch(() => {
-                        alert('Não foi possível salvar as alterações.');
+                        toast.error('Não foi possível salvar as alterações.');
                         setSavingUser(false);
                         onClose();
                       });
                   }}>
-                  {/* TODO: show success/message error */}
                   Salvar
                 </Button>
                 <Button disabled={savingUser} onClick={onClose}>
@@ -677,7 +1041,53 @@ const UserControl = () => {
               </ModalFooter>
             </ModalContent>
           </>
-        ) : null}
+        ) : (
+          <>
+            <ModalContent>
+              <ModalHeader>Novo Usuário</ModalHeader>
+              <ModalCloseButton />
+              <ModalBody pb={6}>
+                <Form
+                  inputs={creationForm}
+                  errors={errors}
+                  value={inputs}
+                  onChange={handleChange}
+                  onValidate={handleCreationValidate}
+                  spacing={5}
+                  noSubmit
+                />
+              </ModalBody>
+
+              <ModalFooter>
+                <Button
+                  colorScheme="primary"
+                  mr={3}
+                  disabled={savingUser}
+                  onClick={() => {
+                    setSavingUser(true);
+
+                    Usuarios.create(token, inputs)
+                      .then(() => {
+                        setErrors({});
+                        setInputs({});
+                        setSavingUser(false);
+                        onClose();
+                      })
+                      .catch(() => {
+                        toast.error('Não foi possível criar o usuário.');
+                        setSavingUser(false);
+                        onClose();
+                      });
+                  }}>
+                  Cadastrar
+                </Button>
+                <Button disabled={savingUser} onClick={onClose}>
+                  Cancelar
+                </Button>
+              </ModalFooter>
+            </ModalContent>
+          </>
+        )}
       </Modal>
     </S.Wrapper>
   );
