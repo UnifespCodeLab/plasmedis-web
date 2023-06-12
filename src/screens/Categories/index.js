@@ -4,6 +4,8 @@ import {useHistory, Link} from 'react-router-dom';
 import {Icon} from '@mdi/react';
 import {Box} from '@chakra-ui/layout';
 import {
+  Flex,
+  Select,
   IconButton,
   Text,
   Table,
@@ -15,11 +17,15 @@ import {
 } from '@chakra-ui/react';
 
 import {mdiDeleteOutline} from '@mdi/js';
+import PageSelector from '../../components/elements/PageSelector';
 import * as Categorias from '../../domain/categorias';
 import {Context as AuthContext} from '../../components/stores/Auth';
 
 function Categories() {
   const {user, token} = useContext(AuthContext);
+  const [pageMetadata, setPageMetadata] = useState({});
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [categories, setCategories] = useState(null);
   const history = useHistory();
 
@@ -33,12 +39,19 @@ function Categories() {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const result = await Categorias.getAll(token);
-      setCategories(result);
+      const result = await Categorias.getAll(token, page, limit);
+      setCategories(result.categories);
+      setPageMetadata({
+        count: result.count,
+        current: result.current,
+        limit: result.limit,
+        next: result.next,
+        previous: result.previous,
+      });
     };
 
     fetchCategories();
-  }, [token]);
+  }, [token, page, limit]);
 
   const removeCategory = useCallback(
     async (id) => {
@@ -57,6 +70,22 @@ function Categories() {
         <Text color="#2f7384" fontSize="2xl" fontWeight={600} marginBottom={4}>
           Gerenciar Categorias
         </Text>
+
+        <Flex direction="row" mb={4} alignItems="center" justifyContent="right">
+          <Text mr={4}>Número de registros</Text>
+          <Select
+            width={90}
+            value={limit}
+            onChange={(event) => {
+              setLimit(event.target.value);
+              setPage(1);
+            }}>
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </Select>
+        </Flex>
 
         <Box
           bg={{base: 'white', lg: 'white'}}
@@ -98,6 +127,7 @@ function Categories() {
             </Tbody>
           </Table>
         </Box>
+        <PageSelector metadata={pageMetadata} onChangePage={setPage} />
       </Box>
     </>
   );

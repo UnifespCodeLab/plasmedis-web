@@ -56,16 +56,17 @@ function Home() {
 
   const [categories, setCategories] = useState([]);
 
-  const [posts, setPosts] = useState(null);
+  const [posts, setPosts] = useState([]);
   const [newPostagem, setNewPostagem] = useState({});
+
+  const [postsPage, setPostsPage] = useState(1);
+  const [hasMorePosts, setHasMorePosts] = useState(true);
 
   // 1 = Admin
   // 2 = Moderador
   const canVerifyPostTypeIds = [1, 2];
 
   const fetchPosts = useCallback(async () => {
-    setPosts(null);
-
     let index = tab;
 
     if (filteredCategory) {
@@ -77,21 +78,25 @@ function Home() {
     }
 
     let result = [];
+    const limit = 5;
     if (index === 0 || index === 1)
-      result = await Postagens.getAll(token, {
+      result = await Postagens.getAll(token, postsPage, limit, {
         recommended: tab === 1 ? true : null,
       });
     else {
       // FUTURE: como qualquer discussão de adição de novas categorias é pra próxima "sprint", no momento vai ficar meio hardcoded assim
-      result = await Postagens.getAll(token, {
+      result = await Postagens.getAll(token, postsPage, limit, {
         category: categories.find((c) => c.name === tabs[index])?.id ?? null,
       });
     }
 
-    if (isNull(result)) return;
+    if (isNull(result.posts)) return;
 
-    setPosts(
-      result.map((post) => {
+    setHasMorePosts(result.next !== '');
+
+    setPosts([
+      ...posts,
+      ...result.posts.map((post) => {
         // HACK: a api nao envia nome de categoria/bairro, então isso é um workaround
 
         const category = categories.find((c) => c.id === post.category.id);
@@ -101,21 +106,21 @@ function Home() {
 
         return post;
       }),
-    );
-  }, [tab, token]);
+    ]);
+  }, [tab, token, posts]);
 
   useEffect(() => {
     // recuperando lista de categorias para tabs
 
     const fetchCategories = async () => {
-      const result = await Categorias.getAll(token);
+      const result = await Categorias.getAll(token, 1, 50);
 
       if (isNull(result)) return;
 
-      setCategories(result);
+      setCategories(result.categories);
       setTabs(
         ['Feed', 'Recomendados'].concat(
-          result
+          result.categories
             .filter((category) => category.id !== 0)
             .map((category) => category.name),
         ),
@@ -126,8 +131,10 @@ function Home() {
   }, [token]);
 
   useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+    if (posts && posts.length === 0) fetchPosts();
+
+    if (hasMorePosts) setPostsPage(postsPage + 1);
+  }, [posts, hasMorePosts]);
 
   return (
     <>
@@ -213,9 +220,15 @@ function Home() {
         <Feed
           user={user}
           canVerifyPost={canVerifyPostTypeIds.includes(user.type)}
-          fetchComments={async (id) => {
-            const commentsPage = await Comentarios.getByPostId(token, id);
-            return commentsPage.comments;
+          fetchComments={async (id, page) => {
+            const limit = 2;
+            const commentsPage = await Comentarios.getByPostId(
+              token,
+              id,
+              page,
+              limit,
+            );
+            return commentsPage;
           }}
           onCreateComment={(newComment, itemId) => {
             return Comentarios.create(token, newComment, itemId); // TODO: show error/success message
@@ -224,6 +237,8 @@ function Home() {
             return Postagens.toggleSelo(token, itemId);
           }}
           value={posts}
+          hasMorePosts={hasMorePosts}
+          fetchNextPage={fetchPosts}
         />
       </Wrapper>
 
