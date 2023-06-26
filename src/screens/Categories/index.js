@@ -1,4 +1,10 @@
-import React, {useContext, useState, useEffect, useCallback} from 'react';
+import React, {
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from 'react';
 import {useHistory, Link} from 'react-router-dom';
 
 import {Icon} from '@mdi/react';
@@ -14,6 +20,14 @@ import {
   Tr,
   Th,
   Td,
+  useDisclosure,
+  AlertDialog,
+  AlertDialogOverlay,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogBody,
+  AlertDialogFooter,
+  Button,
 } from '@chakra-ui/react';
 
 import {mdiDeleteOutline} from '@mdi/js';
@@ -27,6 +41,9 @@ function Categories() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [categories, setCategories] = useState(null);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
+  const {isOpen, onOpen, onClose} = useDisclosure();
+  const cancelRef = useRef();
   const history = useHistory();
 
   useEffect(() => {
@@ -57,9 +74,14 @@ function Categories() {
     async (id) => {
       try {
         await Categorias.deleteById(token, id);
+        // delete from categories state
+        setCategories((list) => {
+          return list.filter((category) => category.id !== id);
+        });
       } catch (e) {
         alert(e.message);
       }
+      setCategoryToDelete(null);
     },
     [token],
   );
@@ -116,7 +138,10 @@ function Categories() {
                         aria-label="Deletar categoria"
                         title="Deletar categoria"
                         cursor="pointer"
-                        onClick={() => removeCategory(category.id)}
+                        onClick={() => {
+                          setCategoryToDelete(category.id);
+                          onOpen();
+                        }}
                         size={1}
                         icon={<Icon size={1} path={mdiDeleteOutline} />}
                         variant="ghost"
@@ -129,6 +154,44 @@ function Categories() {
         </Box>
         <PageSelector metadata={pageMetadata} onChangePage={setPage} />
       </Box>
+
+      <AlertDialog
+        isOpen={isOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={onClose}
+        motionPreset="slideInBottom">
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Deletar Categoria
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              Deseja realmente deletar a categoria?
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button
+                mr={2}
+                ref={cancelRef}
+                onClick={() => {
+                  setCategoryToDelete(null);
+                  onClose();
+                }}>
+                Cancelar
+              </Button>
+              <Button
+                colorScheme="primary"
+                onClick={() => {
+                  removeCategory(categoryToDelete);
+                  onClose();
+                }}>
+                Confirmar
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </>
   );
 }
