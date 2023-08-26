@@ -24,11 +24,16 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import {MdSend, MdVerifiedUser} from 'react-icons/md';
+import {FaMicrophone} from 'react-icons/fa';
 import ReactHtmlParser from 'react-html-parser';
 
 import {Button} from '@chakra-ui/button';
 import Icon from '@chakra-ui/icon';
 import {get, isEmpty, isNil, isString} from 'lodash';
+
+import SpeechRecognition, {
+  useSpeechRecognition,
+} from 'react-speech-recognition';
 
 import * as User from '../../../domain/usuarios';
 import {deleteById} from '../../../domain/postagens';
@@ -69,6 +74,13 @@ const Postagem = ({
 
   const [messageHeader, setMessageHeader] = useState('');
   const [messageBody, setMessageBody] = useState('');
+
+  const {
+    transcript,
+    listening,
+    resetTranscript,
+    browserSupportsSpeechRecognition,
+  } = useSpeechRecognition();
 
   const htmlDescription = useMemo(() => {
     const text = item.description;
@@ -285,12 +297,37 @@ const Postagem = ({
                   </Box>
 
                   <Input
-                    value={newComment}
+                    value={listening ? transcript : newComment}
                     onChange={(event) => setNewComment(event.target.value)}
                     borderRadius="50px"
                     placeholder="Envie um comentário"
                     size="md"
                     isInvalid={newCommentInvalid}
+                  />
+                  <IconButton
+                    isDisabled={creatingComment}
+                    ml={4}
+                    colorScheme={listening ? 'red' : 'primary'}
+                    icon={<Icon fontSize="2xl" as={FaMicrophone} />}
+                    isRound
+                    onClick={(event) => {
+                      if (!browserSupportsSpeechRecognition) {
+                        alert(
+                          'O seu navegador não suporta a função de aúdio, por favor utilize o Google Chrome',
+                        );
+                      }
+
+                      if (listening) {
+                        SpeechRecognition.stopListening();
+                        setNewComment(transcript);
+                      } else {
+                        resetTranscript();
+                        SpeechRecognition.startListening({
+                          continuous: true,
+                          language: 'pt-BR',
+                        });
+                      }
+                    }}
                   />
                   <IconButton
                     isDisabled={creatingComment}
