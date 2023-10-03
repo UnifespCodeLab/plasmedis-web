@@ -22,13 +22,15 @@ import {
   useDisclosure,
   Flex,
   useBreakpointValue,
+  Icon,
 } from '@chakra-ui/react';
 
-import {Avatar} from '@chakra-ui/avatar';
+import {Avatar, AvatarBadge} from '@chakra-ui/avatar';
 
-import {Button} from '@chakra-ui/button';
+import {Button, IconButton} from '@chakra-ui/button';
 
 import {get, isNull} from 'lodash';
+import {MdNotifications} from 'react-icons/md';
 import EditablePostagem from '../../components/elements/EditablePostagem';
 import Feed from '../../components/elements/Feed';
 
@@ -211,9 +213,21 @@ function Home() {
               textAlign="left"
               p={3}
               pl={6}
+              mr={4}
               onClick={onOpen}>
               No que você está pensando?{' '}
             </Button>
+            <IconButton
+              borderRadius={20}
+              icon={
+                <Avatar
+                  _hover={{bg: 'light.300'}}
+                  bg={{base: 'none', lg: 'light.200'}}
+                  icon={<Icon fontSize="3xl" as={MdNotifications} />}>
+                  {5 > 0 ? <AvatarBadge boxSize="1.2em" bg="red.500" /> : <></>}
+                </Avatar>
+              }
+            />
           </Flex>
         </Box>
 
