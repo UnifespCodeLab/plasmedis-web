@@ -41,6 +41,7 @@ import {Wrapper} from './styles';
 import * as Postagens from '../../domain/postagens';
 import * as Categorias from '../../domain/categorias';
 import * as Comentarios from '../../domain/comentarios';
+import * as Notificacoes from '../../domain/notificacoes';
 
 function Home() {
   const history = useHistory();
@@ -63,6 +64,8 @@ function Home() {
 
   const [postsPage, setPostsPage] = useState(1);
   const [hasMorePosts, setHasMorePosts] = useState(true);
+
+  const [notifications, setNotifications] = useState([]);
 
   // 1 = Admin
   // 2 = Moderador
@@ -129,7 +132,16 @@ function Home() {
       );
     };
 
+    const fetchNotifications = async () => {
+      const result = await Notificacoes.getByUser(token, user.id);
+
+      if (isNull(result)) return;
+
+      setNotifications(result.notifications);
+    };
+
     fetchCategories();
+    fetchNotifications();
   }, [token]);
 
   useEffect(() => {
@@ -224,7 +236,11 @@ function Home() {
                   _hover={{bg: 'light.300'}}
                   bg={{base: 'none', lg: 'light.200'}}
                   icon={<Icon fontSize="3xl" as={MdNotifications} />}>
-                  {5 > 0 ? <AvatarBadge boxSize="1.2em" bg="red.500" /> : <></>}
+                  {notifications.length > 0 ? (
+                    <AvatarBadge boxSize="1.2em" bg="red.500" />
+                  ) : (
+                    <></>
+                  )}
                 </Avatar>
               }
             />
