@@ -12,6 +12,7 @@ import {
   MenuDivider,
   MenuItem,
   MenuList,
+  Stack,
   Text,
   Tooltip,
 } from '@chakra-ui/react';
@@ -95,7 +96,12 @@ const NotificationsMenu = ({items}) => {
               // TODO: criar uma forma de identificar a ação da notificação
               alert('Ação da notificação');
             }}>
-            {notification.content}
+            <Stack spacing={{base: 0, lg: 0.5}}>
+              <Text>{notification.content}</Text>
+              <Text fontSize="xs" color="gray">
+                {notification.created_date.fromNow()}
+              </Text>
+            </Stack>
           </MenuItem>
         ))}
       </MenuList>
