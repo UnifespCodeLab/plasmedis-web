@@ -28,7 +28,7 @@ import {Avatar} from '@chakra-ui/avatar';
 
 import {Button} from '@chakra-ui/button';
 
-import {get, isNull} from 'lodash';
+import {get, isNull, set} from 'lodash';
 import EditablePostagem from '../../components/elements/EditablePostagem';
 import Feed from '../../components/elements/Feed';
 import NotificationsMenu from '../../components/elements/NotificationsMenu';
@@ -65,6 +65,8 @@ function Home() {
   const [hasMorePosts, setHasMorePosts] = useState(true);
 
   const [notifications, setNotifications] = useState([]);
+  const [notificationsPage, setNotificationsPage] = useState(1);
+  const [hasMoreNotifications, setHasMoreNotifications] = useState(true);
 
   // 1 = Admin
   // 2 = Moderador
@@ -114,11 +116,24 @@ function Home() {
   }, [tab, token, posts]);
 
   const fetchNotifications = async () => {
-    const result = await Notificacoes.getByUser(token, user.id);
+    const limit = 5;
 
-    if (isNull(result)) return;
+    if (hasMoreNotifications) {
+      const result = await Notificacoes.getByUser(
+        token,
+        user.id,
+        notificationsPage,
+        limit,
+      );
 
-    setNotifications(result.notifications);
+      if (isNull(result)) return;
+
+      setHasMoreNotifications(result.next !== '');
+
+      if (hasMoreNotifications) setNotificationsPage(notificationsPage + 1);
+
+      setNotifications([...notifications, ...result.notifications]);
+    }
   };
 
   const onMarkNotificationsAsRead = async (ids) => {
@@ -241,6 +256,8 @@ function Home() {
             <NotificationsMenu
               items={notifications}
               onMarkAsRead={onMarkNotificationsAsRead}
+              fetchNextPage={fetchNotifications}
+              hasMoreNotifications={hasMoreNotifications}
             />
           </Flex>
         </Box>

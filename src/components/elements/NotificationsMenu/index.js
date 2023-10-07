@@ -1,8 +1,10 @@
-import React, {useCallback} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import PropTypes from 'prop-types';
+import {isNull} from 'lodash';
 import {
   Avatar,
   AvatarBadge,
+  Box,
   Flex,
   Icon,
   IconButton,
@@ -12,6 +14,7 @@ import {
   MenuDivider,
   MenuItem,
   MenuList,
+  Spinner,
   Stack,
   Text,
   Tooltip,
@@ -19,7 +22,46 @@ import {
 import {MdNotifications, MdSettings} from 'react-icons/md';
 import {IoCheckmark} from 'react-icons/io5';
 
-const NotificationsMenu = ({items, onMarkAsRead}) => {
+const NotificationsMenu = ({
+  items,
+  onMarkAsRead,
+  fetchNextPage,
+  hasMoreNotifications,
+}) => {
+  const loaderRef = useRef(null);
+  const [loadMore, setLoadMore] = useState(true);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setLoadMore(true);
+          fetchNextPage();
+          setLoadMore(false);
+        }
+      },
+      {threshold: 1},
+    );
+
+    if (loaderRef.current) {
+      observer.observe(loaderRef.current);
+    }
+
+    return () => {
+      if (loaderRef.current) {
+        observer.unobserve(loaderRef.current);
+      }
+    };
+  }, [items, loaderRef]);
+
+  if (isNull(items)) {
+    return (
+      <Box w="100%" textAlign="center" mt={5}>
+        <Spinner colorScheme="primary" />
+      </Box>
+    );
+  }
+
   return (
     <Menu>
       <Tooltip label="Notificações">
@@ -85,26 +127,58 @@ const NotificationsMenu = ({items, onMarkAsRead}) => {
           </Flex>
         </Flex>
         <MenuDivider m={0} />
-        {items.map((notification) => (
-          <MenuItem
-            key={notification.id}
-            fontWeight={!notification.read ? 'bold' : 'normal'}
-            fontSize="sm"
-            whiteSpace="initial"
-            _hover={{bg: 'light.300'}}
-            onClick={() => {
-              // TODO: criar uma forma de identificar a ação da notificação
-              if (!notification.read) onMarkAsRead(notification.id);
-              alert('Ação da notificação');
-            }}>
-            <Stack spacing={{base: 0, lg: 0.5}}>
-              <Text>{notification.content}</Text>
-              <Text fontSize="xs" color="gray">
-                {notification.created_date.fromNow()}
-              </Text>
-            </Stack>
-          </MenuItem>
-        ))}
+        <Box maxHeight="40vh" overflowY="scroll">
+          {items.map((notification, index) => {
+            if (index === items.length - 1 && hasMoreNotifications) {
+              return (
+                <div key={notification.id} ref={loaderRef}>
+                  <MenuItem
+                    fontWeight={!notification.read ? 'bold' : 'normal'}
+                    fontSize="sm"
+                    whiteSpace="initial"
+                    _hover={{bg: 'light.300'}}
+                    onClick={() => {
+                      // TODO: criar uma forma de identificar a ação da notificação
+                      if (!notification.read) onMarkAsRead(notification.id);
+                      alert('Ação da notificação');
+                    }}>
+                    <Stack spacing={{base: 0, lg: 0.5}}>
+                      <Text>{notification.content}</Text>
+                      <Text fontSize="xs" color="gray">
+                        {notification.created_date.fromNow()}
+                      </Text>
+                    </Stack>
+                  </MenuItem>
+                  {loadMore && (
+                    <Box w="100%" textAlign="center" mt={5}>
+                      <Spinner colorScheme="primary" />
+                    </Box>
+                  )}
+                </div>
+              );
+            }
+            return (
+              <MenuItem
+                key={notification.id}
+                fontWeight={!notification.read ? 'bold' : 'normal'}
+                fontSize="sm"
+                whiteSpace="initial"
+                _hover={{bg: 'light.300'}}
+                onClick={() => {
+                  // TODO: criar uma forma de identificar a ação da notificação
+                  if (!notification.read) onMarkAsRead(notification.id);
+                  alert('Ação da notificação');
+                }}>
+                <Stack spacing={{base: 0, lg: 0.5}}>
+                  <Text>{notification.content}</Text>
+                  <Text fontSize="xs" color="gray">
+                    {notification.created_date.fromNow()}
+                  </Text>
+                </Stack>
+              </MenuItem>
+            );
+          })}
+        </Box>
       </MenuList>
     </Menu>
   );
@@ -114,6 +188,8 @@ NotificationsMenu.displayName = 'NotificationsMenu';
 NotificationsMenu.defaultProps = {
   items: [],
   onMarkAsRead: () => {},
+  fetchNextPage: () => {},
+  hasMoreNotifications: false,
 };
 NotificationsMenu.propTypes = {
   items: PropTypes.arrayOf(
@@ -125,6 +201,8 @@ NotificationsMenu.propTypes = {
     }),
   ),
   onMarkAsRead: PropTypes.func,
+  fetchNextPage: PropTypes.func,
+  hasMoreNotifications: PropTypes.bool,
 };
 
 export default NotificationsMenu;
