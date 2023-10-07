@@ -113,6 +113,24 @@ function Home() {
     ]);
   }, [tab, token, posts]);
 
+  const fetchNotifications = async () => {
+    const result = await Notificacoes.getByUser(token, user.id);
+
+    if (isNull(result)) return;
+
+    setNotifications(result.notifications);
+  };
+
+  const onMarkNotificationsAsRead = async (ids) => {
+    if (Array.isArray(ids) && ids.length > 0) {
+      await Notificacoes.markAllAsRead(token, ids);
+    } else {
+      await Notificacoes.markAsRead(token, ids);
+    }
+
+    fetchNotifications();
+  };
+
   useEffect(() => {
     // recuperando lista de categorias para tabs
 
@@ -129,14 +147,6 @@ function Home() {
             .map((category) => category.name),
         ),
       );
-    };
-
-    const fetchNotifications = async () => {
-      const result = await Notificacoes.getByUser(token, user.id);
-
-      if (isNull(result)) return;
-
-      setNotifications(result.notifications);
     };
 
     fetchCategories();
@@ -228,7 +238,10 @@ function Home() {
               onClick={onOpen}>
               No que você está pensando?{' '}
             </Button>
-            <NotificationsMenu items={notifications} />
+            <NotificationsMenu
+              items={notifications}
+              onMarkAsRead={onMarkNotificationsAsRead}
+            />
           </Flex>
         </Box>
 

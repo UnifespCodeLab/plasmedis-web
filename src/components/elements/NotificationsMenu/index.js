@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useCallback} from 'react';
 import PropTypes from 'prop-types';
 import {
   Avatar,
@@ -19,7 +19,7 @@ import {
 import {MdNotifications, MdSettings} from 'react-icons/md';
 import {IoCheckmark} from 'react-icons/io5';
 
-const NotificationsMenu = ({items}) => {
+const NotificationsMenu = ({items, onMarkAsRead}) => {
   return (
     <Menu>
       <Tooltip label="Notificações">
@@ -57,7 +57,7 @@ const NotificationsMenu = ({items}) => {
             <Link
               fontSize={12}
               onClick={() => {
-                alert('Marcar todas como lidas');
+                onMarkAsRead(items.map((item) => item.id));
               }}>
               <Flex>
                 <Icon
@@ -88,12 +88,13 @@ const NotificationsMenu = ({items}) => {
         {items.map((notification) => (
           <MenuItem
             key={notification.id}
-            fontWeight={notification.read ? 'bold' : 'normal'}
+            fontWeight={!notification.read ? 'bold' : 'normal'}
             fontSize="sm"
             whiteSpace="initial"
             _hover={{bg: 'light.300'}}
             onClick={() => {
               // TODO: criar uma forma de identificar a ação da notificação
+              if (!notification.read) onMarkAsRead(notification.id);
               alert('Ação da notificação');
             }}>
             <Stack spacing={{base: 0, lg: 0.5}}>
@@ -112,6 +113,7 @@ const NotificationsMenu = ({items}) => {
 NotificationsMenu.displayName = 'NotificationsMenu';
 NotificationsMenu.defaultProps = {
   items: [],
+  onMarkAsRead: () => {},
 };
 NotificationsMenu.propTypes = {
   items: PropTypes.arrayOf(
@@ -122,6 +124,7 @@ NotificationsMenu.propTypes = {
       read: PropTypes.bool.isRequired,
     }),
   ),
+  onMarkAsRead: PropTypes.func,
 };
 
 export default NotificationsMenu;
