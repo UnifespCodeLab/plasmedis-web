@@ -139,11 +139,22 @@ function Home() {
   const onMarkNotificationsAsRead = async (ids) => {
     if (Array.isArray(ids) && ids.length > 0) {
       await Notificacoes.markAllAsRead(token, ids);
+      const notificationsRead = [...notifications];
+      notificationsRead.forEach((notification) => {
+        if (ids.includes(notification.id)) {
+          notification.read = true;
+        }
+      });
+      setNotifications(notificationsRead);
     } else {
       await Notificacoes.markAsRead(token, ids);
+      const notificationsRead = [...notifications];
+      const notification = notificationsRead.find((n) => n.id === ids);
+      if (notification) {
+        notification.read = true;
+      }
+      setNotifications(notificationsRead);
     }
-
-    fetchNotifications();
   };
 
   useEffect(() => {
