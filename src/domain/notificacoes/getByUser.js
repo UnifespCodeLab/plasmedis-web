@@ -32,6 +32,11 @@ export default async function (token, id, page, limit) {
       notifications: get(noitificationsPage, 'data.notifications', []).map(
         (notification) => ({
           id: get(notification, 'id'),
+          action: {
+            id: get(notification, 'action.id'),
+            object_id: get(notification, 'action.object_id'),
+            description: get(notification, 'action.description'),
+          },
           content: get(notification, 'content'),
           read: get(notification, 'read'),
           created_date: moment(`${get(notification, 'created_date')}Z`),
