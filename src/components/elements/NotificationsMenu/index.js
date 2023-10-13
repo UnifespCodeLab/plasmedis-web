@@ -119,7 +119,7 @@ const NotificationsMenu = ({
                 <AvatarBadge
                   boxSize="1.1em"
                   bg="red.500"
-                  hidden={!(items.length > 0)}
+                  hidden={!items.some((item) => !item.read)}
                 />
               </Avatar>
             }
