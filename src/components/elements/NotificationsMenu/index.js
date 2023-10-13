@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import PropTypes from 'prop-types';
-import {isNull} from 'lodash';
+import {get, isNull} from 'lodash';
 import {
   Avatar,
   AvatarBadge,
@@ -22,6 +22,15 @@ import {
 import {MdNotifications, MdSettings} from 'react-icons/md';
 import {IoCheckmark} from 'react-icons/io5';
 
+const NOTIFICATION_ACTION_TYPES = {
+  NO_ACTION: 1,
+  SELECT_CATEGORY: 2,
+  SELECT_POST: 3,
+  OPEN_POSTS_MANAGEMENT: 4,
+  OPEN_PROFILE: 5,
+  OPEN_USER_CONTROL: 6,
+};
+
 const NotificationsMenu = ({
   items,
   onMarkAsRead,
@@ -30,6 +39,33 @@ const NotificationsMenu = ({
 }) => {
   const loaderRef = useRef(null);
   const [loadMore, setLoadMore] = useState(true);
+
+  const getNotificationAction = (notification) => {
+    switch (notification.action.id) {
+      case NOTIFICATION_ACTION_TYPES.NO_ACTION:
+        break;
+      case NOTIFICATION_ACTION_TYPES.SELECT_CATEGORY:
+        // TODO: criar essa visualização
+        alert(`Selecionar categoria ${notification.action.object_id}`);
+        break;
+      case NOTIFICATION_ACTION_TYPES.SELECT_POST:
+        // TODO: criar essa visualização
+        alert(`Selecionar post ${notification.action.object_id}`);
+        break;
+      case NOTIFICATION_ACTION_TYPES.OPEN_POSTS_MANAGEMENT:
+        // TODO: criar essa visualização
+        window.location = '/admin/controle-de-postagens';
+        break;
+      case NOTIFICATION_ACTION_TYPES.OPEN_PROFILE:
+        window.location = '/perfil';
+        break;
+      case NOTIFICATION_ACTION_TYPES.OPEN_USER_CONTROL:
+        window.location = '/admin/controle-de-usuarios';
+        break;
+      default:
+        break;
+    }
+  };
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -138,9 +174,8 @@ const NotificationsMenu = ({
                     whiteSpace="initial"
                     _hover={{bg: 'light.300'}}
                     onClick={() => {
-                      // TODO: criar uma forma de identificar a ação da notificação
                       if (!notification.read) onMarkAsRead(notification.id);
-                      alert('Ação da notificação');
+                      getNotificationAction(notification);
                     }}>
                     <Stack spacing={{base: 0, lg: 0.5}}>
                       <Text>{notification.content}</Text>
@@ -165,9 +200,8 @@ const NotificationsMenu = ({
                 whiteSpace="initial"
                 _hover={{bg: 'light.300'}}
                 onClick={() => {
-                  // TODO: criar uma forma de identificar a ação da notificação
                   if (!notification.read) onMarkAsRead(notification.id);
-                  alert('Ação da notificação');
+                  getNotificationAction(notification);
                 }}>
                 <Stack spacing={{base: 0, lg: 0.5}}>
                   <Text>{notification.content}</Text>
