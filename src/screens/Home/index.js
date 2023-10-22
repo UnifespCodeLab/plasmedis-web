@@ -51,7 +51,7 @@ function Home() {
 
   const [tabs, setTabs] = useState([]);
 
-  const [tab, setTab] = useState(0);
+  const [tab, setTab] = useState(null);
   const {isOpen, onOpen, onClose} = useDisclosure();
   const [creatingPost, setCreatingPost] = useState(false);
   const {user, token} = useContext(AuthContext);
@@ -176,11 +176,11 @@ function Home() {
   useEffect(() => {
     if (filteredCategory) {
       const selectedTabIndex = tabs.indexOf(filteredCategory);
-      // console.log(selectedTabIndex);
       if (selectedTabIndex !== -1) {
-        // index = selectedTabIndex;
         setTab(selectedTabIndex);
       }
+    } else {
+      setTab(0);
     }
     setHasMorePosts(true);
   }, [tabs]);
