@@ -36,6 +36,7 @@ const NotificationsMenu = ({
   onMarkAsRead,
   fetchNextPage,
   hasMoreNotifications,
+  selectCategory,
 }) => {
   const loaderRef = useRef(null);
   const [loadMore, setLoadMore] = useState(true);
@@ -45,8 +46,7 @@ const NotificationsMenu = ({
       case NOTIFICATION_ACTION_TYPES.NO_ACTION:
         break;
       case NOTIFICATION_ACTION_TYPES.SELECT_CATEGORY:
-        // TODO: criar essa visualização
-        alert(`Selecionar categoria ${notification.action.object_id}`);
+        selectCategory(notification.action.object_id);
         break;
       case NOTIFICATION_ACTION_TYPES.SELECT_POST:
         // TODO: criar essa visualização
@@ -224,6 +224,7 @@ NotificationsMenu.defaultProps = {
   onMarkAsRead: () => {},
   fetchNextPage: () => {},
   hasMoreNotifications: false,
+  selectCategory: () => {},
 };
 NotificationsMenu.propTypes = {
   items: PropTypes.arrayOf(
@@ -237,6 +238,7 @@ NotificationsMenu.propTypes = {
   onMarkAsRead: PropTypes.func,
   fetchNextPage: PropTypes.func,
   hasMoreNotifications: PropTypes.bool,
+  selectCategory: PropTypes.func,
 };
 
 export default NotificationsMenu;

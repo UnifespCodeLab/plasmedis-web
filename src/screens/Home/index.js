@@ -189,6 +189,17 @@ function Home() {
     if (hasMorePosts) fetchPosts();
   }, [tab]);
 
+  const selectCategory = (category) => {
+    categories.forEach((c) => {
+      if (c.id === category) {
+        setPostsPage(1);
+        setHasMorePosts(true);
+        setPosts([]);
+        setTab(tabs.indexOf(c.name));
+      }
+    });
+  };
+
   return (
     <>
       <Wrapper px={{base: 0, lg: 6}}>
@@ -276,6 +287,7 @@ function Home() {
               onMarkAsRead={onMarkNotificationsAsRead}
               fetchNextPage={fetchNotifications}
               hasMoreNotifications={hasMoreNotifications}
+              selectCategory={selectCategory}
             />
           </Flex>
         </Box>
