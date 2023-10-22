@@ -49,7 +49,7 @@ function Home() {
 
   const filteredCategory = params.get('categoria');
 
-  const [tabs, setTabs] = useState(['Feed', 'Recomendados']);
+  const [tabs, setTabs] = useState([]);
 
   const [tab, setTab] = useState(0);
   const {isOpen, onOpen, onClose} = useDisclosure();
@@ -62,7 +62,7 @@ function Home() {
   const [newPostagem, setNewPostagem] = useState({});
 
   const [postsPage, setPostsPage] = useState(1);
-  const [hasMorePosts, setHasMorePosts] = useState(true);
+  const [hasMorePosts, setHasMorePosts] = useState(false);
 
   const [notifications, setNotifications] = useState([]);
   const [notificationsPage, setNotificationsPage] = useState(1);
@@ -72,16 +72,8 @@ function Home() {
   // 2 = Moderador
   const canVerifyPostTypeIds = [1, 2];
 
-  const fetchPosts = useCallback(async () => {
-    let index = tab;
-
-    if (filteredCategory) {
-      const selectedTabIndex = tabs.indexOf(filteredCategory);
-      if (selectedTabIndex !== -1) {
-        index = selectedTabIndex;
-        setTab(selectedTabIndex);
-      }
-    }
+  const fetchPosts = async () => {
+    const index = tab;
 
     let result = [];
     const limit = 5;
@@ -100,6 +92,8 @@ function Home() {
 
     setHasMorePosts(result.next !== '');
 
+    if (hasMorePosts) setPostsPage((p) => p + 1);
+
     setPosts([
       ...posts,
       ...result.posts.map((post) => {
@@ -113,7 +107,7 @@ function Home() {
         return post;
       }),
     ]);
-  }, [tab, token, posts]);
+  };
 
   const fetchNotifications = async () => {
     const limit = 5;
@@ -180,10 +174,20 @@ function Home() {
   }, [token]);
 
   useEffect(() => {
-    if (posts && posts.length === 0) fetchPosts();
+    if (filteredCategory) {
+      const selectedTabIndex = tabs.indexOf(filteredCategory);
+      // console.log(selectedTabIndex);
+      if (selectedTabIndex !== -1) {
+        // index = selectedTabIndex;
+        setTab(selectedTabIndex);
+      }
+    }
+    setHasMorePosts(true);
+  }, [tabs]);
 
-    if (hasMorePosts) setPostsPage(postsPage + 1);
-  }, [posts, hasMorePosts]);
+  useEffect(() => {
+    if (hasMorePosts) fetchPosts();
+  }, [tab]);
 
   return (
     <>
@@ -194,6 +198,9 @@ function Home() {
           variant="unstyled"
           index={tab}
           onChange={(value) => {
+            setPostsPage(1);
+            setHasMorePosts(true);
+            setPosts([]);
             setTab(value);
             history.push(`?categoria=${tabs[value]}`);
           }}
@@ -324,7 +331,9 @@ function Home() {
                   onClose();
                   setCreatingPost(false);
                   setNewPostagem({});
-                  fetchPosts();
+                  setPostsPage(1);
+                  setHasMorePosts(true);
+                  setPosts([]);
                 });
               }}>
               {/* TODO: show success/message error */}
