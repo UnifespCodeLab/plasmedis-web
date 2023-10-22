@@ -60,6 +60,8 @@ const NotificationsMenu = ({
         window.location = '/perfil';
         break;
       case NOTIFICATION_ACTION_TYPES.OPEN_USER_CONTROL:
+        // TODO: adicionar visualização com filtro
+        // window.location = '/admin/controle-de-usuarios?filtro=';
         window.location = '/admin/controle-de-usuarios';
         break;
       default:
