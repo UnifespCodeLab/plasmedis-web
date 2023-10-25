@@ -22,14 +22,7 @@ import {
 import {MdNotifications, MdSettings} from 'react-icons/md';
 import {IoCheckmark} from 'react-icons/io5';
 
-const NOTIFICATION_ACTION_TYPES = {
-  NO_ACTION: 1,
-  SELECT_CATEGORY: 2,
-  SELECT_POST: 3,
-  OPEN_POSTS_MANAGEMENT: 4,
-  OPEN_PROFILE: 5,
-  OPEN_USER_CONTROL: 6,
-};
+import {NOTIFICATION_ACTION_TYPES} from '../../../utils/notifications/constants';
 
 const NotificationsMenu = ({
   items,

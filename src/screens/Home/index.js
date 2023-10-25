@@ -41,6 +41,10 @@ import * as Postagens from '../../domain/postagens';
 import * as Categorias from '../../domain/categorias';
 import * as Comentarios from '../../domain/comentarios';
 import * as Notificacoes from '../../domain/notificacoes';
+import {
+  NOTIFICATION_ACTION_TYPES,
+  NOTIFICATION_MESSAGES,
+} from '../../utils/notifications/constants';
 
 function Home() {
   const history = useHistory();
@@ -200,6 +204,24 @@ function Home() {
     });
   };
 
+  const verifyPost = async (postId) => {
+    const resp = await Postagens.toggleSelo(token, postId);
+    if (resp) {
+      const post = posts.find((p) => p.id === postId);
+      post.verified = resp;
+      await Notificacoes.create(token, {
+        userId: post.author.id,
+        content: NOTIFICATION_MESSAGES.postVerified.replace(
+          '{{title}}',
+          post.title,
+        ),
+        actionType: NOTIFICATION_ACTION_TYPES.SELECT_POST,
+        actionObjectId: post.id,
+      });
+      setPosts([...posts]);
+    }
+  };
+
   return (
     <>
       <Wrapper px={{base: 0, lg: 6}}>
@@ -308,9 +330,7 @@ function Home() {
           onCreateComment={(newComment, itemId) => {
             return Comentarios.create(token, newComment, itemId); // TODO: show error/success message
           }}
-          onToggleSelo={(itemId) => {
-            return Postagens.toggleSelo(token, itemId);
-          }}
+          onToggleSelo={verifyPost}
           value={posts}
           hasMorePosts={hasMorePosts}
           fetchNextPage={fetchPosts}
