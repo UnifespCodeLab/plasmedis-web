@@ -190,8 +190,8 @@ function Home() {
   }, [tabs]);
 
   useEffect(() => {
-    if (hasMorePosts) fetchPosts();
-  }, [tab]);
+    if (hasMorePosts && !creatingPost) fetchPosts();
+  }, [tab, creatingPost]);
 
   const selectCategory = (category) => {
     categories.forEach((c) => {
@@ -359,13 +359,13 @@ function Home() {
               disabled={creatingPost}
               onClick={() => {
                 setCreatingPost(true);
-                Postagens.create(token, newPostagem).then(() => {
+                Postagens.create(token, newPostagem).then(async () => {
                   onClose();
-                  setCreatingPost(false);
                   setNewPostagem({});
                   setPostsPage(1);
                   setHasMorePosts(true);
-                  setPosts([]);
+                  await setPosts([]);
+                  setCreatingPost(false);
                 });
               }}>
               {/* TODO: show success/message error */}
