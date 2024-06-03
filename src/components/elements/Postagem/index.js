@@ -168,7 +168,7 @@ const Postagem = ({
     if (
       openComments &&
       item?.id &&
-      numberOfComments.length > 0 &&
+      numberOfComments > 0 &&
       comments.length === 0
     )
       fetchAndUpdateComments(item?.id, 1);
