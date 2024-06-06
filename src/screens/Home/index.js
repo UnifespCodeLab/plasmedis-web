@@ -136,6 +136,12 @@ function Home() {
     if (hasMorePosts) setPostsPage(postsPage + 1);
   }, [posts, hasMorePosts]);
 
+  useEffect(() => {
+    // atualiza os posts ao mudar de categoria
+    setPosts([]);
+    setPostsPage(1);
+  }, [tab]);
+
   return (
     <>
       <Wrapper px={{base: 0, lg: 6}}>
