@@ -165,9 +165,14 @@ const Postagem = ({
 
   // se comments está nulo (ainda não houve um fetch com sucesso da api)
   useEffect(() => {
-    if (openComments && item?.id && comments.length === 0)
+    if (
+      openComments &&
+      item?.id &&
+      numberOfComments > 0 &&
+      comments.length === 0
+    )
       fetchAndUpdateComments(item?.id, 1);
-  }, [openComments, item, comments, fetchAndUpdateComments]);
+  }, [openComments, item, comments, numberOfComments, fetchAndUpdateComments]);
 
   const toggleVerifyPost = useCallback(() => {
     if (!verifiable && item?.id) return;
