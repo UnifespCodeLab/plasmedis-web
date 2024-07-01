@@ -24,16 +24,8 @@ jobs:
           echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.VPS_HOST }} > ~/.ssh/known_hosts
 
-      - name: Deploy to VPS
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
-            cd /root/repo/codelab-loader/plasmedis-web
+      - name: connect and pull
+        run: ssh ${{ secrets.VPS_USER }}@${{ secrets.SSH_HOST }} "cd /root/repo/codelab-loader/plasmedis-web && git checkout develop && git pull && exit"
 
-            # Atualizar o repositório
-            git pull origin development
-
-            # Construir e rodar os contêineres Docker
-            cd /root/repo/codelab-loader/
-            docker-compose down plasmedis-web
-            docker-compose up -d --build plasmedis-web
-          EOF
+      - name: restart container
+        run: ssh ${{ secrets.VPS_USER }}@${{ secrets.SSH_HOST }} "cd /root/repo/codelab-loader && docker compose down plasmedis-web && docker compose up plasmedis-web exit"
