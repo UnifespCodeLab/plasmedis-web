@@ -17,15 +17,13 @@ jobs:
         uses: actions/checkout@v2
 
       - name: install ssh keys
-      # check this thread to understand why its needed:
-      # https://stackoverflow.com/a/70447517
+        # check this thread to understand why its needed:
+        # https://stackoverflow.com/a/70447517
         run: |
           install -m 600 -D /dev/null ~/.ssh/id_rsa
           echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.VPS_HOST }} > ~/.ssh/known_hosts
-
       - name: connect and pull
-        run: ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd /root/repo/codelab-loader/plasmedis-web && git checkout develop && git pull && exit"
-
-      - name: restart container
-        run: ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd /root/repo/codelab-loader && docker compose down plasmedis-web && docker compose up plasmedis-web exit"
+        run: ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd /repo/codelab-loader/plasmedis-web && git pull && exit"
+      - name: cleanup
+        run: rm -rf ~/.ssh
