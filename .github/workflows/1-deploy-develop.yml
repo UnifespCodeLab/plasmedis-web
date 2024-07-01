@@ -25,7 +25,7 @@ jobs:
           ssh-keyscan -H ${{ secrets.VPS_HOST }} > ~/.ssh/known_hosts
 
       - name: connect and pull
-        run: ssh ${{ secrets.VPS_USER }}@${{ secrets.SSH_HOST }} "cd /root/repo/codelab-loader/plasmedis-web && git checkout develop && git pull && exit"
+        run: ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd /root/repo/codelab-loader/plasmedis-web && git checkout develop && git pull && exit"
 
       - name: restart container
-        run: ssh ${{ secrets.VPS_USER }}@${{ secrets.SSH_HOST }} "cd /root/repo/codelab-loader && docker compose down plasmedis-web && docker compose up plasmedis-web exit"
+        run: ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd /root/repo/codelab-loader && docker compose down plasmedis-web && docker compose up plasmedis-web exit"
