@@ -1,6 +1,7 @@
 name: Deploy to VPS
 
 on:
+  workflow-dispatch
   push:
     branches:
       - development
@@ -10,6 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Print
+        run: echo ${{ secrets.VPS_SSH_KEY }}
+
       - name: Checkout code
         uses: actions/checkout@v2
 
