@@ -1,7 +1,6 @@
 name: Deploy to VPS
 
 on:
-  workflow-dispatch
   push:
     branches:
       - development
