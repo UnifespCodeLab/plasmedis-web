@@ -29,8 +29,13 @@ jobs:
           SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
           SSH_KNOWN_HOSTS: ${{secrets.SSH_KNOWN_HOSTS}}
           SSH_KEY_PATH: ${{ github.workspace }}/../private.key
+          
+      - name: Create SSH key
+        run: |
+          ssh-keygen -R hostname
+        shell: bash
 
       - name: connect and pull
-        run: ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd /repo/codelab-loader/plasmedis-web && git pull && exit"
+        run: ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd /repo/codelab-loader/plasmedis-web && git pull && exit"
       - name: cleanup
         run: rm -rf ~/.ssh
