@@ -23,17 +23,13 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > ../private.key
           sudo chmod 600 ../private.key
           echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          ssh-keygen -R hostname
+          ssh-keygen -R $SSH_HOST
         shell: bash
         env:
           SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
           SSH_KNOWN_HOSTS: ${{secrets.SSH_KNOWN_HOSTS}}
           SSH_KEY_PATH: ${{ github.workspace }}/../private.key
-          
-      - name: Create SSH key
-        run: |
-          ssh-keygen -R hostname
-        shell: bash
+          SSH_HOST: ${{ secrets.VPS_HOST }}
 
       - name: connect and pull
         run: ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd /repo/codelab-loader/plasmedis-web && git pull && exit"
