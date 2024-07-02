@@ -17,25 +17,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Create SSH key
-        run: |
-          mkdir -p ~/.ssh/
-          echo "$SSH_PRIVATE_KEY" > ../private.key
-          sudo chmod 600 ../private.key
-          echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          ssh-keygen -R $SSH_HOST
-        shell: bash
-        env:
-          SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
-          SSH_KNOWN_HOSTS: ${{secrets.SSH_KNOWN_HOSTS}}
-          SSH_KEY_PATH: ${{ github.workspace }}/../private.key
-          SSH_HOST: ${{ secrets.VPS_HOST }}
+      - name: Deploy to Staging server
+        uses: easingthemes/ssh-deploy@main
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: "-rlgoDzvc -i"
+          SOURCE: "repo"
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          TARGET: ${{ secrets.REMOTE_TARGET }}
+          SCRIPT_BEFORE: |
+            whoami
+            ls -al
+          SCRIPT_AFTER: |
+            whoami
+            ls -al
+            git pull
+            echo $RSYNC_STDOUT
 
       - name: connect and pull
         run: | 
-          echo ${{ secrets.VPS_USER }}
-          echo ${{ secrets.VPS_HOST }}
-          ssh -t -t ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}
+          echo ${{ secrets.REMOTE_USER }}
+          echo ${{ secrets.REMOTE_HOST }}
+          ssh -t -t ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}
           
       - name: cleanup
         run: rm -rf ~/.ssh
