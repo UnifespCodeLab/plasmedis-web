@@ -35,7 +35,7 @@ jobs:
         run: | 
           echo ${{ secrets.VPS_USER }}
           echo ${{ secrets.VPS_HOST }}
-          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}
+          ssh -t -t ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}
           
       - name: cleanup
         run: rm -rf ~/.ssh
