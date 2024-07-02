@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - development
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -21,8 +22,8 @@ jobs:
         # https://stackoverflow.com/a/70447517
         run: |
           install -m 600 -D /dev/null ~/.ssh/id_rsa
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.VPS_SSH_KEY }} > ~/.ssh/known_hosts
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} > ~/.ssh/known_hosts
 
       - name: connect and pull
         run: ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd /repo/codelab-loader/plasmedis-web && git pull && exit"
