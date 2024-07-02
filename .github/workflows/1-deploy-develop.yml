@@ -33,7 +33,9 @@ jobs:
 
       - name: connect and pull
         run: | 
-          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} /bin/bash
-          cd repo/codelab-loader/plasmedis-web && git pull && exit
+          echo ${{ secrets.VPS_USER }}
+          echo ${{ secrets.VPS_HOST }}
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}
+          
       - name: cleanup
         run: rm -rf ~/.ssh
