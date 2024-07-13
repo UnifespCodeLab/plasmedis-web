@@ -90,7 +90,7 @@ function Home() {
       });
     }
 
-    if (isNull(result.posts)) return;
+    if (result.posts && result.posts.length === 0) return;
 
     setHasMorePosts(result.next !== '');
 
