@@ -57,7 +57,14 @@ function Home() {
   const [categories, setCategories] = useState([]);
 
   const [posts, setPosts] = useState([]);
-  const [newPostagem, setNewPostagem] = useState({});
+  const [newPostagem, setNewPostagem] = useState({
+    title: '',
+    description: '',
+    category: {
+      id: 0,
+      name: '',
+    },
+  });
 
   const [postsPage, setPostsPage] = useState(1);
   const [hasMorePosts, setHasMorePosts] = useState(true);
@@ -141,6 +148,10 @@ function Home() {
     setPosts([]);
     setPostsPage(1);
   }, [tab]);
+
+  const handlePostUpdate = (field, value) => {
+    setNewPostagem((prevPost) => ({...prevPost, [field]: value}));
+  };
 
   return (
     <>
@@ -260,7 +271,11 @@ function Home() {
           <ModalHeader>Criar Postagem</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
-            <EditablePostagem value={newPostagem} categories={categories} />
+            <EditablePostagem
+              value={newPostagem}
+              categories={categories}
+              onPostUpdate={handlePostUpdate}
+            />
           </ModalBody>
 
           <ModalFooter>
