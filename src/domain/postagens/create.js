@@ -1,4 +1,4 @@
-import {isEmpty, isNil} from 'lodash';
+import {isEmpty, isNil, isObject} from 'lodash';
 import api from '../../services/api';
 
 export default async function create(token, newPostagem) {
@@ -10,7 +10,7 @@ export default async function create(token, newPostagem) {
   const objToSend = {
     texto: description,
     titulo: title,
-    categoria: category || 0,
+    categoria: category.id,
   };
 
   try {
