@@ -50,6 +50,14 @@ function Posts() {
   const {isOpen, onOpen, onClose} = useDisclosure();
   const [savingPost, setSavingPost] = useState(false);
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const result = await Categories.getAll(token, 1, 50);
+      setCategories(result.categories);
+    };
+    fetchCategories();
+  }, [token]);
+
   const fetchPosts = useCallback(async () => {
     let result = [];
     result = await Postagens.getAll(token, page, limit);
@@ -68,22 +76,13 @@ function Posts() {
       next: result.next,
       previous: result.previous,
     });
+  });
+
+  useEffect(() => {
+    if (categories.length > 0) {
+      fetchPosts();
+    }
   }, [token, page, limit, categories]);
-
-  useEffect(() => {
-    fetchPosts();
-  }, [posts]);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      const result = await Categories.getAll(token, 1, 50);
-
-      if (isNull(result)) return;
-
-      setCategories(result.categories);
-    };
-    fetchCategories();
-  }, [token]);
 
   const handlePostUpdate = (field, value) => {
     setSelectedPost((prevPost) => ({...prevPost, [field]: value}));
