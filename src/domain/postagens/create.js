@@ -5,12 +5,20 @@ export default async function create(token, newPostagem) {
   if (isNil(token) || isEmpty(token))
     throw new Error('Token não foi informado');
 
-  const {title, category, description} = newPostagem;
+  let category;
+
+  if (isObject(newPostagem.category)) {
+    category = newPostagem.category.id;
+  } else {
+    category = newPostagem.category;
+  }
+
+  const {title, description} = newPostagem;
 
   const objToSend = {
     texto: description,
     titulo: title,
-    categoria: category.id,
+    categoria: category,
   };
 
   try {
