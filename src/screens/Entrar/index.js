@@ -73,7 +73,7 @@ function Entrar({history} = {}) {
         shadow="md"
         bgColor="white">
         <Logo>
-          <h1>TEApp</h1>
+          <h1>IBEApp</h1>
         </Logo>
 
         <Content>
