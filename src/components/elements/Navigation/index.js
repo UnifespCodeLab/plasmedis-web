@@ -59,6 +59,13 @@ const adminSection = [
     type_alowed: [1],
     wait_settings: true,
   },
+  {
+    title: 'Gerenciar Postagens',
+    icon: mdiApplicationCog,
+    to: '/postagens',
+    type_alowed: [1],
+    wait_settings: true,
+  },
 ];
 
 const informationSection = [

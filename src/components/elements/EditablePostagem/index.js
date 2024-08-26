@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import PropTypes from 'prop-types';
 
 import {FormControl, FormLabel, Input, Select} from '@chakra-ui/react';
@@ -7,7 +7,7 @@ import 'react-quill/dist/quill.snow.css';
 
 import Textarea from '../Textarea';
 
-const EditablePostagem = ({value, categories} = {}) => {
+const EditablePostagem = ({value, categories, onPostUpdate} = {}) => {
   return (
     value && (
       <div>
@@ -18,7 +18,7 @@ const EditablePostagem = ({value, categories} = {}) => {
             type="text"
             value={value.title}
             onChange={(event) => {
-              value.title = event.target.value;
+              onPostUpdate('title', event.target.value);
             }}
           />
           {/* <FormHelperText>Título da sua postagem.</FormHelperText> */}
@@ -27,7 +27,7 @@ const EditablePostagem = ({value, categories} = {}) => {
           <FormLabel>Descrição</FormLabel>
           <ReactQuill
             theme="snow"
-            value={value}
+            value={value.description}
             onChange={(newValue) => {
               value.description = newValue;
             }}
@@ -39,16 +39,13 @@ const EditablePostagem = ({value, categories} = {}) => {
           <FormLabel>Categoria</FormLabel>
           <Select
             colorScheme="primary"
-            value={value.category}
+            value={value.category.id}
             onChange={(event) => {
-              value.category = event.target.value;
+              onPostUpdate('category', event.target.value);
             }}>
             {categories.map((category) => {
               return (
-                <option
-                  selected={category.id === 0}
-                  key={category.id}
-                  value={category.id}>
+                <option key={category.id} value={category.id}>
                   {category.name}
                 </option>
               );
