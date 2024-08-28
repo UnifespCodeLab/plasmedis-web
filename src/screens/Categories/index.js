@@ -28,12 +28,27 @@ import {
   AlertDialogBody,
   AlertDialogFooter,
   Button,
+  Spacer,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalCloseButton,
+  ModalHeader,
+  ModalBody,
+  FormControl,
+  FormLabel,
+  Input,
+  ModalFooter,
 } from '@chakra-ui/react';
 
+import {toast} from 'react-toastify';
+import {MdAdd, MdEdit} from 'react-icons/md';
 import {mdiDeleteOutline} from '@mdi/js';
 import PageSelector from '../../components/elements/PageSelector';
 import * as Categorias from '../../domain/categorias';
 import {Context as AuthContext} from '../../components/stores/Auth';
+
+toast.configure();
 
 function Categories() {
   const {user, token} = useContext(AuthContext);
@@ -41,8 +56,16 @@ function Categories() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [categories, setCategories] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [newCategory, setNewCategory] = useState({});
+  const [savingCategory, setSavingCategory] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
   const {isOpen, onOpen, onClose} = useDisclosure();
+  const {
+    isOpen: isModalOpen,
+    onOpen: onModalOpen,
+    onClose: onModalClose,
+  } = useDisclosure();
   const cancelRef = useRef();
   const history = useHistory();
 
@@ -54,19 +77,19 @@ function Categories() {
     }
   }, []);
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      const result = await Categorias.getAll(token, page, limit);
-      setCategories(result.categories);
-      setPageMetadata({
-        count: result.count,
-        current: result.current,
-        limit: result.limit,
-        next: result.next,
-        previous: result.previous,
-      });
-    };
+  const fetchCategories = useCallback(async () => {
+    const result = await Categorias.getAll(token, page, limit);
+    setCategories(result.categories);
+    setPageMetadata({
+      count: result.count,
+      current: result.current,
+      limit: result.limit,
+      next: result.next,
+      previous: result.previous,
+    });
+  });
 
+  useEffect(() => {
     fetchCategories();
   }, [token, page, limit]);
 
@@ -93,7 +116,16 @@ function Categories() {
           Gerenciar Categorias
         </Text>
 
-        <Flex direction="row" mb={4} alignItems="center" justifyContent="right">
+        <Flex direction="row" mb={4} alignItems="center">
+          <Button
+            colorScheme="primary"
+            leftIcon={<MdAdd fontSize={20} />}
+            onClick={(event) => {
+              onModalOpen(event);
+            }}>
+            Nova Categoria
+          </Button>
+          <Spacer />
           <Text mr={4}>Número de registros</Text>
           <Select
             width={90}
@@ -116,6 +148,7 @@ function Categories() {
           <Table variant="striped" color="black" colorScheme="blackAlpha">
             <Thead>
               <Tr bg="primary.600">
+                <Th color="white">Id</Th>
                 <Th color="white">Nome</Th>
                 <Th color="white">Número de Postagens</Th>
                 <Th color="white">Ações</Th>
@@ -125,6 +158,7 @@ function Categories() {
               {categories &&
                 categories.map((category) => (
                   <Tr key={category.id}>
+                    <Td>{category.id}</Td>
                     <Td>{category.name}</Td>
                     <Td color="primary.600">
                       <Link
@@ -134,6 +168,18 @@ function Categories() {
                       </Link>
                     </Td>
                     <Td>
+                      <IconButton
+                        aria-label="Editar categoria"
+                        title="Editar categoria"
+                        size="sm"
+                        mr={2}
+                        colorScheme="primary"
+                        icon={<MdEdit />}
+                        onClick={(event) => {
+                          setSelectedCategory(category);
+                          onModalOpen(event);
+                        }}
+                      />
                       <IconButton
                         aria-label="Deletar categoria"
                         title="Deletar categoria"
@@ -192,6 +238,116 @@ function Categories() {
           </AlertDialogContent>
         </AlertDialogOverlay>
       </AlertDialog>
+
+      <Modal
+        isCentered
+        isOpen={isModalOpen}
+        onClose={(event) => {
+          setSelectedCategory(null);
+          onModalClose(event);
+        }}>
+        <ModalOverlay />
+        {selectedCategory ? (
+          <>
+            <ModalContent>
+              <ModalHeader>Editar Categoria</ModalHeader>
+              <ModalCloseButton />
+              <ModalBody>
+                <FormControl>
+                  <FormLabel>Nome</FormLabel>
+                  <Input
+                    colorScheme="primary"
+                    type="text"
+                    value={selectedCategory.name}
+                    onChange={(event) => {
+                      setSelectedCategory({
+                        id: selectedCategory.id,
+                        name: event.target.value,
+                        posts: selectedCategory.posts,
+                      });
+                    }}
+                  />
+                </FormControl>
+              </ModalBody>
+              <ModalFooter>
+                <Button
+                  colorScheme="primary"
+                  mr={3}
+                  disabled={savingCategory}
+                  onClick={() => {
+                    setSavingCategory(true);
+                    Categorias.updateById(
+                      token,
+                      selectedCategory.id,
+                      selectedCategory,
+                    )
+                      .then(() => {
+                        setSavingCategory(false);
+                        setSelectedCategory(null);
+                        onModalClose();
+                        fetchCategories();
+                      })
+                      .catch(() => {
+                        toast.error('Não foi possível criar a categoria.');
+                        setSavingCategory(false);
+                        onModalClose();
+                      });
+                  }}>
+                  Cadastrar
+                </Button>
+                <Button disabled={savingCategory} onClick={onModalClose}>
+                  Cancelar
+                </Button>
+              </ModalFooter>
+            </ModalContent>
+          </>
+        ) : (
+          <>
+            <ModalContent>
+              <ModalHeader>Nova Categoria</ModalHeader>
+              <ModalCloseButton />
+              <ModalBody>
+                <FormControl>
+                  <FormLabel>Nome</FormLabel>
+                  <Input
+                    colorScheme="primary"
+                    type="text"
+                    onChange={(event) => {
+                      setNewCategory({name: event.target.value});
+                    }}
+                  />
+                </FormControl>
+              </ModalBody>
+              <ModalFooter>
+                <Button
+                  colorScheme="primary"
+                  mr={3}
+                  disabled={savingCategory}
+                  onClick={() => {
+                    setSavingCategory(true);
+                    Categorias.create(token, newCategory)
+                      .then(() => {
+                        setSavingCategory(false);
+                        setNewCategory({});
+                        onModalClose();
+                        fetchCategories();
+                      })
+                      .catch(() => {
+                        toast.error('Não foi possível criar a categoria.');
+                        setSavingCategory(false);
+                        onModalClose();
+                      });
+                  }}>
+                  Cadastrar
+                </Button>
+                <Button disabled={savingCategory} onClick={onModalClose}>
+                  Cancelar
+                </Button>
+              </ModalFooter>
+            </ModalContent>
+          </>
+        )}
+      </Modal>
     </>
   );
 }
