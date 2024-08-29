@@ -84,6 +84,7 @@ function Entrar({history} = {}) {
                 name="username"
                 type="text"
                 placeholder="Seu nome de usuário ou e-mail"
+                autoFocus
               />
             </FormField>
 
