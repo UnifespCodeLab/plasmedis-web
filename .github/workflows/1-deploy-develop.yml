@@ -16,7 +16,7 @@ jobs:
 
       - name: Stop container
         run: |
-          cd ./..
+          cd codelab-loader
           docker compose stop plasmedis-web
 
       - name: Deploy to Server
