@@ -16,7 +16,7 @@ jobs:
 
       - name: Stop container
         run: |
-          cd ..
+          cd ./..
           docker compose stop plasmedis-web
 
       - name: Deploy to Server
@@ -31,5 +31,5 @@ jobs:
 
       - name: Run container
         run: |
-          cd ..
+          cd ./..
           docker compose up plasmedis-web
