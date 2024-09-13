@@ -14,21 +14,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Stop container
-        run: |
-          docker compose -f ../docker-compose.yml stop plasmedis-web
-
       - name: Deploy to Server
         uses: easingthemes/ssh-deploy@main
-        env:
+        with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           ARGS: "-rlgoDzvc -i"
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
           TARGET: ${{ secrets.REMOTE_TARGET }}
           EXCLUDE: "/dist/, /node_modules/"
-
-      - name: Run container
-        run: |
-          cd ./..
-          docker compose up plasmedis-web
+          SCRIPT_BEFORE: |
+            ls
