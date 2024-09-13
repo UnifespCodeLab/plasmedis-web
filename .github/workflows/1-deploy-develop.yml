@@ -14,6 +14,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Stop container
+        run: |
+          cd ..
+          docker-compose stop plasmedis-web
+
       - name: Deploy to Server
         uses: easingthemes/ssh-deploy@main
         env:
@@ -24,9 +29,7 @@ jobs:
           TARGET: ${{ secrets.REMOTE_TARGET }}
           EXCLUDE: "/dist/, /node_modules/"
 
-      - name: Docker Compose
-        uses: hoverkraft-tech/compose-action@v2.0.1
-        with:
-          compose-file: "../docker-compose.yml"
-          services: |
-            plasmedis-web
+      - name: Run container
+        run: |
+          cd ..
+          docker-compose up plasmedis-web
