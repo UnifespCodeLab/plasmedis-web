@@ -16,8 +16,7 @@ jobs:
 
       - name: Stop container
         run: |
-          cd codelab-loader
-          docker compose stop plasmedis-web
+          docker compose -f ../docker-compose.yml stop plasmedis-web
 
       - name: Deploy to Server
         uses: easingthemes/ssh-deploy@main
