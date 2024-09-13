@@ -24,4 +24,8 @@ jobs:
           TARGET: ${{ secrets.REMOTE_TARGET }}
           EXCLUDE: "/dist/, /node_modules/"
           SCRIPT_BEFORE: |
-            ls
+            cd codelab-loader
+            docker compose stop plasmedis-web
+          SCRIPT_AFTER: |
+            cd codelab-loader
+            docker compose up -d plasmedis-web
