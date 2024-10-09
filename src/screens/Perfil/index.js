@@ -50,18 +50,6 @@ const Perfil = (...props) => {
       nascimento: Yup.date().required(
         'O campo "Data de Nascimento" é obrigatório',
       ),
-      area_atuacao: Yup.string().required(
-        'O campo "Área de Atuação" é obrigatório',
-      ),
-      instituicao: Yup.string().required('O campo "Instituição" é obrigatório'),
-      campus: Yup.string(),
-      setor: Yup.string(),
-      deficiencia: Yup.bool(),
-      parente_com_tea: Yup.string(),
-      freq_convivio_tea: Yup.string(),
-      qtd_alunos_tea: Yup.number(),
-      tempo_trabalho_tea: Yup.number(),
-      qtd_pacientes_tea_ano: Yup.number(),
     });
   }, []);
 
@@ -185,112 +173,6 @@ const Perfil = (...props) => {
         type: 'date',
         required: false,
       },
-      {
-        name: 'area_atuacao',
-        path: 'data.area_atuacao',
-        label: 'Área de Atuação',
-        type: 'radio',
-        required: false,
-        options: [
-          {
-            text: 'Professor',
-            value: 'Professor',
-          },
-          {
-            text: 'Professor Especialista em Inclusão Escolar',
-            value: 'Especialista',
-          },
-          {
-            text: 'Profissional de Clínica',
-            value: 'Profissional',
-          },
-          {
-            text: 'Profissional Especialista em Inclusão Escolar',
-            value: 'Profissional Especialista',
-          },
-        ],
-        stackProps: {
-          alignItems: 'start',
-        },
-      },
-      {
-        name: 'instituicao',
-        path: 'data.instituicao',
-        label: 'Instituição',
-        type: 'text',
-        placeholder: 'Ex: UNIFESP',
-        required: false,
-      },
-      [
-        {
-          name: 'campus',
-          path: 'data.campus',
-          label: 'Campus',
-          type: 'text',
-          placeholder: 'Ex: São José dos Campos',
-          required: false,
-        },
-        {
-          name: 'setor',
-          path: 'data.setor',
-          label: 'Setor',
-          type: 'text',
-          placeholder: 'Ex: setor...',
-          required: false,
-        },
-      ],
-      [
-        {
-          name: 'deficiencia',
-          path: 'data.deficiencia',
-          label: 'Possui Deficiência',
-          type: 'check',
-          required: false,
-        },
-        {
-          name: 'parente_com_tea',
-          path: 'data.parente_com_tea',
-          label: 'Convive com Parente com TEA',
-          type: 'check',
-          required: false,
-        },
-      ],
-      [
-        {
-          name: 'freq_convivio_tea',
-          path: 'data.freq_convivio_tea',
-          label: 'Frequência de Convívio TEA por semana',
-          type: 'numeric',
-          placeholder: 'Ex: 2',
-          required: false,
-        },
-        {
-          name: 'qtd_alunos_tea',
-          path: 'data.qtd_alunos_tea',
-          label: 'Quantidade de Alunos TEA',
-          placeholder: 'Ex: 2',
-          type: 'numeric',
-          required: false,
-        },
-      ],
-      [
-        {
-          name: 'tempo_trabalho_tea',
-          path: 'data.tempo_trabalho_tea',
-          label: 'Tempo de Trabalho TEA em anos',
-          placeholder: 'Ex: 2',
-          type: 'numeric',
-          required: false,
-        },
-        {
-          name: 'qtd_pacientes_tea_ano',
-          path: 'data.qtd_pacientes_tea_ano',
-          label: 'Quantidade de Pacientes TEA/Ano',
-          placeholder: 'Ex: 1',
-          type: 'numeric',
-          required: false,
-        },
-      ],
     ],
     [],
   );
