@@ -11,6 +11,7 @@ import UserControl from '../screens/Admin/UserControl';
 import Categories from '../screens/Categories';
 import UseGuide from '../screens/UseGuide';
 import Perfil from '../screens/Perfil';
+import Comments from '../screens/Comments';
 
 function Routes() {
   return (
@@ -28,6 +29,11 @@ function Routes() {
           path="/admin/controle-de-usuarios"
           component={UserControl}
         />
+        <PrivateRoute path="/comentarios" component={Comments} />
+        {/* A rota abaixo é dinâmica. Ela é capaz de capturar
+        qualquer parte da URL após a barra como um parametro 
+        chamado category. Qualquer rota abaixo dela nao sera
+        renderizada corretamente. */}
         <PrivateRoute path="/:category" />
       </Switch>
     </BrowserRouter>

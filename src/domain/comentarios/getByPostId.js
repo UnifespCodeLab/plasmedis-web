@@ -4,7 +4,7 @@ import stringify from '../../utils/stringify';
 
 import api from '../../services/api';
 
-export default async function getAll(token, post, page, limit) {
+export default async function getPostById(token, post, page, limit) {
   if (isNil(token) || isEmpty(token))
     throw new Error('Token não foi informado');
 

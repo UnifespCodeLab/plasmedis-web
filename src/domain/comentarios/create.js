@@ -5,6 +5,9 @@ export default async function create(token, newComentario, postagemId) {
   if (isNil(token) || isEmpty(token))
     throw new Error('Token não foi informado');
 
+  console.log('typeof id: ', typeof postagemId);
+  console.log('id: ', postagemId);
+
   const objToSend = {
     postagem: postagemId,
     texto: newComentario,
