@@ -84,6 +84,8 @@ function Home() {
       }
     }
 
+    if (hasMorePosts) setPostsPage(postsPage + 1);
+
     let result = [];
     const limit = 5;
     if (index === 0 || index === 1)
@@ -139,9 +141,7 @@ function Home() {
 
   useEffect(() => {
     if (posts && posts.length === 0) fetchPosts();
-
-    if (hasMorePosts) setPostsPage(postsPage + 1);
-  }, [posts, hasMorePosts]);
+  }, [posts]);
 
   useEffect(() => {
     // atualiza os posts ao mudar de categoria
