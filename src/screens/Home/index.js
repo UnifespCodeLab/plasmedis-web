@@ -84,8 +84,6 @@ function Home() {
       }
     }
 
-    if (hasMorePosts) setPostsPage(postsPage + 1);
-
     let result = [];
     const limit = 5;
     if (index === 0 || index === 1)
@@ -102,6 +100,8 @@ function Home() {
     if (result.posts && result.posts.length === 0) return;
 
     setHasMorePosts(result.next !== '');
+
+    if (hasMorePosts) setPostsPage(postsPage + 1);
 
     setPosts([
       ...posts,
@@ -289,7 +289,8 @@ function Home() {
                   onClose();
                   setCreatingPost(false);
                   setNewPostagem({});
-                  fetchPosts();
+                  setPostsPage(1);
+                  setPosts([]);
                 });
               }}>
               {/* TODO: show success/message error */}
