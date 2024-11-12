@@ -21,7 +21,6 @@ import {
   ModalCloseButton,
   useDisclosure,
   Flex,
-  useBreakpointValue,
 } from '@chakra-ui/react';
 
 import {Avatar} from '@chakra-ui/avatar';
@@ -147,6 +146,7 @@ function Home() {
     // atualiza os posts ao mudar de categoria
     setPosts([]);
     setPostsPage(1);
+    setHasMorePosts(true);
   }, [tab]);
 
   const handlePostUpdate = (field, value) => {
@@ -288,8 +288,16 @@ function Home() {
                 Postagens.create(token, newPostagem).then(() => {
                   onClose();
                   setCreatingPost(false);
-                  setNewPostagem({});
+                  setNewPostagem({
+                    title: '',
+                    description: '',
+                    category: {
+                      id: 0,
+                      name: '',
+                    },
+                  });
                   setPostsPage(1);
+                  setHasMorePosts(true);
                   setPosts([]);
                 });
               }}>
