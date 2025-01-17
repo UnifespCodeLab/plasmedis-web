@@ -22,6 +22,7 @@ import {
   ModalCloseButton,
   Spinner,
   useDisclosure,
+  Tooltip,
 } from '@chakra-ui/react';
 import {MdSend, MdVerifiedUser} from 'react-icons/md';
 import {FaMicrophone} from 'react-icons/fa';
@@ -243,7 +244,11 @@ const Postagem = ({
               </Stack>
             </Flex>
             {checkIfUserCanDeletePost() ? (
-              <FiTrashIcon onClick={() => showDeleteDialog(item.id)} />
+              <Tooltip label="Excluir item" fontSize="sm" placement="top">
+                <span>
+                  <FiTrashIcon onClick={() => showDeleteDialog(item.id)} />
+                </span>
+              </Tooltip>
             ) : null}
           </Flex>
           <Stack>
@@ -309,51 +314,58 @@ const Postagem = ({
                     size="md"
                     isInvalid={newCommentInvalid}
                   />
-                  <IconButton
-                    isDisabled={creatingComment}
-                    ml={4}
-                    colorScheme={listening ? 'red' : 'primary'}
-                    icon={<Icon fontSize="2xl" as={FaMicrophone} />}
-                    isRound
-                    onClick={(event) => {
-                      if (!browserSupportsSpeechRecognition) {
-                        alert(
-                          'O seu navegador não suporta a função de aúdio, por favor utilize o Google Chrome',
-                        );
-                      }
+                  <Tooltip
+                    label="Transcrever áudio"
+                    fontSize="sm"
+                    placement="top">
+                    <IconButton
+                      isDisabled={creatingComment}
+                      ml={4}
+                      colorScheme={listening ? 'red' : 'primary'}
+                      icon={<Icon fontSize="2xl" as={FaMicrophone} />}
+                      isRound
+                      onClick={(event) => {
+                        if (!browserSupportsSpeechRecognition) {
+                          alert(
+                            'O seu navegador não suporta a função de aúdio, por favor utilize o Google Chrome',
+                          );
+                        }
 
-                      if (listening) {
-                        SpeechRecognition.stopListening();
-                        setNewComment(transcript);
-                      } else {
-                        resetTranscript();
-                        SpeechRecognition.startListening({
-                          continuous: true,
-                          language: 'pt-BR',
-                        });
-                      }
-                    }}
-                  />
-                  <IconButton
-                    isDisabled={creatingComment}
-                    ml={4}
-                    colorScheme="primary"
-                    icon={<Icon fontSize="2xl" as={MdSend} />}
-                    isRound
-                    isLoading={creatingComment}
-                    onClick={(event) => {
-                      if (onCreateComment && newComment) {
-                        setNewCommentInvalid(false);
-                        onCreateComment(newComment, item.id).then(() => {
-                          setNumberOfComments(numberOfComments + 1);
-                          fetchAndUpdateComments(item.id, 1);
-                        });
-                        setNewComment('');
-                      } else {
-                        setNewCommentInvalid(true);
-                      }
-                    }}
-                  />
+                        if (listening) {
+                          SpeechRecognition.stopListening();
+                          setNewComment(transcript);
+                        } else {
+                          resetTranscript();
+                          SpeechRecognition.startListening({
+                            continuous: true,
+                            language: 'pt-BR',
+                          });
+                        }
+                      }}
+                    />
+                  </Tooltip>
+                  <Tooltip label="Enviar" fontSize="sm" placement="top">
+                    <IconButton
+                      isDisabled={creatingComment}
+                      ml={4}
+                      colorScheme="primary"
+                      icon={<Icon fontSize="2xl" as={MdSend} />}
+                      isRound
+                      isLoading={creatingComment}
+                      onClick={(event) => {
+                        if (onCreateComment && newComment) {
+                          setNewCommentInvalid(false);
+                          onCreateComment(newComment, item.id).then(() => {
+                            setNumberOfComments(numberOfComments + 1);
+                            fetchAndUpdateComments(item.id, 1);
+                          });
+                          setNewComment('');
+                        } else {
+                          setNewCommentInvalid(true);
+                        }
+                      }}
+                    />
+                  </Tooltip>
                 </Flex>
                 <Stack spacing={4}>
                   {comments.map((comment, index) => (

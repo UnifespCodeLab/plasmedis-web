@@ -43,6 +43,7 @@ import {
   IconButton,
   Spinner,
   Checkbox,
+  Tooltip,
 } from '@chakra-ui/react';
 import {Button} from '@chakra-ui/button';
 import {useHistory} from 'react-router-dom';
@@ -907,25 +908,32 @@ const UserControl = () => {
                   </Td>
                   <Td>
                     <Flex direction="row">
-                      <IconButton
-                        onClick={(event) => {
-                          selectUser(currentUser);
-                          onOpen(event);
-                        }}
-                        size="sm"
-                        mr={2}
-                        colorScheme="primary"
-                        icon={<Icon as={MdEdit} />}
-                      />
-                      <IconButton
-                        onClick={(event) => {
-                          selectUser(currentUser);
-                          recoverAlert.onOpen(event);
-                        }}
-                        size="sm"
-                        colorScheme="primary"
-                        icon={<Icon as={MdLockReset} fontSize={20} />}
-                      />
+                      <Tooltip label="Modificar" fontSize="sm" placement="top">
+                        <IconButton
+                          onClick={(event) => {
+                            selectUser(currentUser);
+                            onOpen(event);
+                          }}
+                          size="sm"
+                          mr={2}
+                          colorScheme="primary"
+                          icon={<Icon as={MdEdit} />}
+                        />
+                      </Tooltip>
+                      <Tooltip
+                        label="Restaurar senha"
+                        fontSize="sm"
+                        placement="top">
+                        <IconButton
+                          onClick={(event) => {
+                            selectUser(currentUser);
+                            recoverAlert.onOpen(event);
+                          }}
+                          size="sm"
+                          colorScheme="primary"
+                          icon={<Icon as={MdLockReset} fontSize={20} />}
+                        />
+                      </Tooltip>
                     </Flex>
                   </Td>
                 </Tr>
