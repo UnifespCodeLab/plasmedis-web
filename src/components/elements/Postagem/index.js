@@ -75,6 +75,36 @@ const Postagem = ({
   const [messageHeader, setMessageHeader] = useState('');
   const [messageBody, setMessageBody] = useState('');
 
+  const [authorUsername, setAuthorUsername] = useState(
+    get(item, 'author.username'),
+  );
+
+  // useEffect para buscar o username se não estiver presente
+  useEffect(() => {
+    // Verifica se já temos o username ou se temos o id do autor
+    if (!authorUsername) {
+      fetch(`http://localhost:5000/users/${item.author.id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error('Erro na requisição do usuário');
+          return res.json();
+        })
+        .then((data) => {
+          if (data && data.user && data.user.username) {
+            setAuthorUsername(data.user.username);
+          }
+        })
+        .catch((error) => {
+          console.error('Erro ao buscar o usuário:', error);
+        });
+    }
+  }, [authorUsername, item, token]);
+
   const {
     transcript,
     listening,
@@ -234,9 +264,15 @@ const Postagem = ({
                 />
               </Box>
               <Stack spacing={{base: 0, lg: 1}}>
-                <Text fontWeight="bold" fontSize="sm" color="black">
-                  {get(item, 'author.name')}
-                </Text>
+                <Flex align="center">
+                  <Text fontWeight="bold" fontSize="sm" color="black" mr={2}>
+                    {get(item, 'author.name')}
+                  </Text>
+                  <Text fontSize="sm" color="black">
+                    {/* Utiliza o username vindo do state ou exibe um placeholder */}
+                    {`@${authorUsername}` || ''}
+                  </Text>
+                </Flex>
                 <Text fontSize="xs" color="gray">
                   {item.dateTime.fromNow()}
                 </Text>
@@ -430,6 +466,7 @@ Postagem.propTypes = {
     author: PropTypes.shape({
       id: PropTypes.number,
       name: PropTypes.string.isRequired,
+      // username: PropTypes.string.isRequired,
     }),
     title: PropTypes.string.isRequired,
     description: PropTypes.string.isRequired,

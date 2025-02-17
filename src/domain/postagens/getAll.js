@@ -40,6 +40,7 @@ export default async function getAll(
         author: {
           id: get(post, 'created.user'),
           name: get(post, 'created.name'),
+          username: get(post, 'created.username'), // Era pra vir daqui, API não está retornando username
           avatar: '<API NÃO ESTÁ ENVIANDO>',
         },
         dateTime: moment(`${get(post, 'created.date')}Z`),

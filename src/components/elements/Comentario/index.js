@@ -1,4 +1,12 @@
-import React, {useCallback, useContext, useMemo} from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  useMemo,
+} from 'react';
+
+import {get, isEmpty, isNil, isString} from 'lodash';
 import PropTypes from 'prop-types';
 import {Anchorme} from 'react-anchorme';
 import {Stack, Box, Text, Flex} from '@chakra-ui/layout';
@@ -7,7 +15,7 @@ import {Context as AuthContext} from '../../stores/Auth';
 import {TextAnchor, FiTrashIcon} from './styles.js';
 
 const Comentario = ({item, onDelete: onDeleteProp} = {}) => {
-  const {user} = useContext(AuthContext);
+  const {user, token} = useContext(AuthContext);
 
   const checkIfIsAbleToDelete = () => {
     if (user.id === item.author.id || user.type === 1 || user.type === 2) {
@@ -21,6 +29,36 @@ const Comentario = ({item, onDelete: onDeleteProp} = {}) => {
     return onDeleteProp || (() => {});
   }, [onDeleteProp]);
 
+  const [authorUsername, setAuthorUsername] = useState(
+    get(item, 'author.username'),
+  );
+
+  // useEffect para buscar o username se não estiver presente
+  useEffect(() => {
+    // Verifica se já temos o username ou se temos o id do autor
+    if (!authorUsername) {
+      fetch(`http://localhost:5000/users/${item.author.id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error('Erro na requisição do usuário');
+          return res.json();
+        })
+        .then((data) => {
+          if (data && data.user && data.user.username) {
+            setAuthorUsername(data.user.username);
+          }
+        })
+        .catch((error) => {
+          console.error('Erro ao buscar o usuário:', error);
+        });
+    }
+  }, [authorUsername, item, user]);
+
   return (
     <Flex flexDirection="row" align="flex-start">
       <Box mr={{base: 2, lg: 3}}>
@@ -31,6 +69,10 @@ const Comentario = ({item, onDelete: onDeleteProp} = {}) => {
           <Flex direction="column">
             <Text fontWeight="bold" fontSize="xs" color="black">
               {item.author?.name}
+            </Text>
+            <Text fontSize="sm" color="black">
+              {/* Utiliza o username vindo do state ou exibe um placeholder */}
+              {`@${authorUsername}` || ''}
             </Text>
             <Text mb={4} fontSize="xs" color="gray">
               {item.dateTime.fromNow()}
