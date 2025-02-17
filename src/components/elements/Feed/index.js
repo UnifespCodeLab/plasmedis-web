@@ -1,10 +1,9 @@
 import React, {useEffect, useRef, useState} from 'react';
 import PropTypes from 'prop-types';
 import {isNull} from 'lodash';
-
-import {Spinner, Box} from '@chakra-ui/react';
+import {Spinner, Box, useDisclosure} from '@chakra-ui/react';
 import Postagem from '../Postagem';
-
+import PostViewModal from '../ModalPostagem';
 import * as User from '../../../domain/usuarios';
 
 const Feed = ({
@@ -19,6 +18,8 @@ const Feed = ({
 } = {}) => {
   const loaderRef = useRef(null);
   const [loadMore, setLoadMore] = useState(false);
+  const {isOpen, onOpen, onClose} = useDisclosure();
+  const [selectedPost, setSelectedPost] = useState(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -41,7 +42,7 @@ const Feed = ({
         observer.unobserve(loaderRef.current);
       }
     };
-  }, [value, loaderRef]);
+  }, [value, loaderRef, fetchNextPage]);
 
   if (isNull(value)) {
     return (
@@ -51,20 +52,32 @@ const Feed = ({
     );
   }
 
+  const handlePostClick = (postagem) => {
+    setSelectedPost(postagem);
+    onOpen();
+  };
+
   return (
     <>
       {value.map((postagem, index) => {
+        // Envolva cada postagem em um Box clicável
+        const postContent = (
+          <Postagem
+            item={postagem}
+            user={user}
+            verifiable={canVerifyPost}
+            fetchComments={fetchComments}
+            onCreateComment={onCreateComment}
+            onToggleSelo={onToggleSelo}
+          />
+        );
+
         if (index === value.length - 1 && hasMorePosts) {
           return (
             <div key={postagem.id} ref={loaderRef}>
-              <Postagem
-                item={postagem}
-                user={user}
-                verifiable={canVerifyPost}
-                fetchComments={fetchComments}
-                onCreateComment={onCreateComment}
-                onToggleSelo={onToggleSelo}
-              />
+              <Box onClick={() => handlePostClick(postagem)} cursor="pointer">
+                {postContent}
+              </Box>
               {loadMore && (
                 <Box w="100%" textAlign="center" mt={5}>
                   <Spinner colorScheme="primary" />
@@ -74,17 +87,31 @@ const Feed = ({
           );
         }
         return (
-          <Postagem
+          <Box
             key={postagem.id}
-            item={postagem}
-            user={user}
-            verifiable={canVerifyPost}
-            fetchComments={fetchComments}
-            onCreateComment={onCreateComment}
-            onToggleSelo={onToggleSelo}
-          />
+            onClick={() => handlePostClick(postagem)}
+            cursor="pointer">
+            {postContent}
+          </Box>
         );
       })}
+
+      {/* Renderiza o modal de visualização se houver uma postagem selecionada */}
+      {selectedPost && (
+        <PostViewModal
+          isOpen={isOpen}
+          onClose={() => {
+            setSelectedPost(null);
+            onClose();
+          }}
+          post={selectedPost}
+          user={user}
+          verifiable={canVerifyPost}
+          fetchComments={fetchComments}
+          onCreateComment={onCreateComment}
+          onToggleSelo={onToggleSelo}
+        />
+      )}
     </>
   );
 };
