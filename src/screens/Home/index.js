@@ -73,7 +73,7 @@ function Home() {
   const canVerifyPostTypeIds = [1, 2];
 
   const fetchPosts = useCallback(async () => {
-    let index = tab;
+    /* let index = tab;
 
     if (filteredCategory) {
       const selectedTabIndex = tabs.indexOf(filteredCategory);
@@ -81,7 +81,8 @@ function Home() {
         index = selectedTabIndex;
         setTab(selectedTabIndex);
       }
-    }
+    } */
+    const index = tab;
 
     let result = [];
     const limit = 5;
@@ -116,6 +117,15 @@ function Home() {
       }),
     ]);
   }, [tab, token, posts]);
+
+  useEffect(() => {
+    if (filteredCategory && tabs.length > 0) {
+      const selectedTabIndex = tabs.indexOf(filteredCategory);
+      if (selectedTabIndex !== -1) {
+        setTab(selectedTabIndex);
+      }
+    }
+  }, [filteredCategory, tabs]);
 
   useEffect(() => {
     // recuperando lista de categorias para tabs
