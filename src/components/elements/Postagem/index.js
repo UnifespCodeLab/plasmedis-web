@@ -243,7 +243,12 @@ const Postagem = ({
               </Stack>
             </Flex>
             {checkIfUserCanDeletePost() ? (
-              <FiTrashIcon onClick={() => showDeleteDialog(item.id)} />
+              <FiTrashIcon
+                onClick={(e) => {
+                  e.stopPropagation();
+                  showDeleteDialog(item.id);
+                }}
+              />
             ) : null}
           </Flex>
           <Stack>
