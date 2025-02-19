@@ -286,7 +286,10 @@ const Postagem = ({
               py={2}
               borderTop="1px solid #eee"
               borderBottom={openComments ? '1px solid #eee' : ''}
-              onClick={() => setOpenComments(!openComments)}>
+              onClick={(e) => {
+                e.stopPropagation(); // Não abrir modal se clicado em comentários
+                setOpenComments(!openComments);
+              }}>
               {numberOfComments > 0
                 ? `${numberOfComments} Comentários`
                 : 'Comentar'}
