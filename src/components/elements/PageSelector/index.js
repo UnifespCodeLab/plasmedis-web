@@ -1,4 +1,10 @@
-import React, {useCallback, useContext, useMemo} from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  useEffect,
+} from 'react';
 import PropTypes from 'prop-types';
 import {Flex} from '@chakra-ui/layout';
 import {Button, IconButton} from '@chakra-ui/button';
@@ -11,7 +17,15 @@ import {
 import {Icon} from '@chakra-ui/react';
 
 const PageSelector = ({metadata, onChangePage} = {}) => {
-  return (
+  const [isLoading, setisLoading] = useState(true);
+
+  useEffect(() => {
+    if (metadata.count) {
+      setisLoading(false);
+    }
+  }, [metadata]);
+
+  return isLoading ? null : (
     <Flex mt={6} alignItems="center" justifyContent="center">
       <IconButton
         backgroundColor="#F0F6F8"
