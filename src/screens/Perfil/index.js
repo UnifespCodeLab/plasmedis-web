@@ -18,6 +18,14 @@ import {
   AlertIcon,
   AlertDescription,
   Tooltip,
+  Avatar,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
 } from '@chakra-ui/react';
 
 import {get, isEmpty, isNil, pick, set} from 'lodash';
@@ -30,6 +38,8 @@ import * as Privilegio from '../../domain/privilegios';
 import {Context as AuthContext} from '../../components/stores/Auth';
 import Form from '../../components/elements/Form';
 
+import AvatarSelector from '../../components/elements/AvatarSelector';
+
 const Perfil = (...props) => {
   const dataWarning = useRef(false);
   const {token, hasData, setHasData, user} = useContext(AuthContext);
@@ -40,6 +50,8 @@ const Perfil = (...props) => {
     useState(false);
   const [usernameChecked, setUsernamedChecked] = useState(null);
   const latestCheckUniqueUsername = useRef(null);
+
+  const {isOpen, onOpen, onClose} = useDisclosure();
 
   const savedCredentials = useRef({});
 
@@ -453,6 +465,31 @@ const Perfil = (...props) => {
                   borderRadius="lg"
                   overflow="hidden"
                   py={5}
+                  px={10}
+                  mb={5}
+                  display="flex"
+                  alignItems="center"
+                  gap={10}>
+                  <Avatar
+                    size="xl"
+                    name={get(user, 'name', '???')}
+                    src={get(user, 'avatar', '???')}
+                  />
+                  <Button
+                    colorScheme="primary"
+                    px={14}
+                    onClick={(event) => {
+                      // selectUser(currentUser);
+                      onOpen(event);
+                    }}>
+                    Alterar avatar
+                  </Button>
+                </Box>
+                <Box
+                  borderWidth="1px"
+                  borderRadius="lg"
+                  overflow="hidden"
+                  py={5}
                   px={6}
                   mb={5}>
                   <Form
@@ -517,6 +554,24 @@ const Perfil = (...props) => {
           </S.Form>
         </Stack>
       </Box>
+
+      {/* Modal para escolher avatar */}
+
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        size="4xl"
+        isCentered
+        motionPreset="slideInBottom">
+        <ModalOverlay />
+        <ModalContent p={4}>
+          <ModalHeader>Alterar avatar</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6} isCentered={false}>
+            <AvatarSelector d />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </S.Wrapper>
   );
 };
