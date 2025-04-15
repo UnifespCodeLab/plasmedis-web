@@ -45,6 +45,11 @@ const Perfil = (...props) => {
   const {token, hasData, setHasData, user} = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [typeData, setTypeData] = useState(null);
+  const [avatarData, setAvatarData] = useState({
+    name: get(user, 'name', '???'),
+    image: get(user, 'avatar', '???'),
+    hasChanged: false,
+  });
 
   const [checkingUsernameAvailability, setCheckingUsernameAvailability] =
     useState(false);
@@ -62,6 +67,7 @@ const Perfil = (...props) => {
       nascimento: Yup.date().required(
         'O campo "Data de Nascimento" é obrigatório',
       ),
+      // avatar: Yup.string(),
     });
   }, []);
 
@@ -276,6 +282,32 @@ const Perfil = (...props) => {
     [],
   );
 
+  const handleDataFromChild = useCallback((data) => {
+    try {
+      if (!data?.image) {
+        return {ok: false, error: 'Tipo de imagem inválida'};
+      }
+
+      setAvatarData((prevData) => ({
+        ...prevData,
+        name: data.name,
+        image: data.image,
+        hasChanged: true,
+      }));
+
+      return {ok: true};
+    } catch (error) {
+      console.error(
+        'Handling error! Problema ao processar dados do avatar',
+        error,
+      );
+      return {
+        ok: false,
+        error: `Problema ao processar dados do avatar, ${error}`,
+      };
+    }
+  }, []);
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(async () => {
     if (isNil(token) || isEmpty(token)) return;
@@ -472,8 +504,8 @@ const Perfil = (...props) => {
                   gap={10}>
                   <Avatar
                     size="xl"
-                    name={get(user, 'name', '???')}
-                    src={get(user, 'avatar', '???')}
+                    name={avatarData.name}
+                    src={avatarData.image}
                   />
                   <Button
                     colorScheme="primary"
@@ -484,6 +516,14 @@ const Perfil = (...props) => {
                     }}>
                     Alterar avatar
                   </Button>
+                  {avatarData.hasChanged ? (
+                    <Alert status="info">
+                      <AlertIcon />
+                      <AlertDescription color="blue.700">
+                        Salve o avatar para atualizá-lo
+                      </AlertDescription>
+                    </Alert>
+                  ) : null}
                 </Box>
                 <Box
                   borderWidth="1px"
@@ -568,7 +608,10 @@ const Perfil = (...props) => {
           <ModalHeader>Alterar avatar</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6} isCentered={false}>
-            <AvatarSelector d />
+            <AvatarSelector
+              sendDataToParent={handleDataFromChild}
+              onClose={onClose}
+            />
           </ModalBody>
         </ModalContent>
       </Modal>

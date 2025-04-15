@@ -1,161 +1,169 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useState, useRef} from 'react';
 import {
   Text,
   Box,
   Avatar,
   HStack,
   VStack,
-  SimpleGrid,
   Flex,
   Button,
   Input,
-  Image,
+  SkeletonCircle,
 } from '@chakra-ui/react';
+import {IoMdDownload} from 'react-icons/io';
 import {get} from 'lodash';
-import {PropTypes} from '../../../domain/usuarios';
+import {toast} from 'react-toastify';
 
 import {Context as AuthContext} from '../../stores/Auth';
 
-const AvatarSelector = () => {
-  const {token, hasData, setHasData, user} = useContext(AuthContext);
-  const [imagePreview, setImagePreview] = useState(null);
-  const [loading, setLoading] = useState(false);
+const AvatarSelector = ({sendDataToParent, onClose}) => {
+  const {user} = useContext(AuthContext);
+  const [avatarData, setAvatarData] = useState({
+    name: get(user, 'name', ''),
+    image: get(user, 'avatar', ''),
+  });
+  const [isAvatarLoading, setIsAvatarLoading] = useState(false);
+  const [isPresetAvatarLoading, setIsPresetAvatarLoading] = useState(
+    Object.fromEntries(presetAvatars.map((_, i) => [i, true])),
+  );
 
-  console.log(user);
+  const fileInputRef = useRef(null);
 
-  const presetAvatars = [
-    'https://cdn.discordapp.com/embed/avatars/0.png',
-    'https://cdn.discordapp.com/embed/avatars/1.png',
-    'https://cdn.discordapp.com/embed/avatars/2.png',
-    'https://cdn.discordapp.com/embed/avatars/3.png',
-    'https://cdn.discordapp.com/embed/avatars/4.png',
-    'https://cdn.discordapp.com/embed/avatars/5.png',
-    'https://cdn.discordapp.com/embed/avatars/6.png',
-    'https://cdn.discordapp.com/embed/avatars/6.png',
-    'https://cdn.discordapp.com/embed/avatars/6.png',
-  ];
+  toast.configure();
 
+  /* TO-DO: Jeito melhor de pre-caregar imagens, com useState */
   const presetAvatarsElement = presetAvatars.map((presetAvatar, index) => (
-    <Avatar
-      onClick={() => handleClickAvatar(index)}
-      key={index}
-      size="xl"
-      src={presetAvatar}
-      _hover={{
-        cursor: 'pointer',
-        transform: 'scale(1.1)',
-        transition: 'all 0.2s ease',
-      }}
-    />
+    <Box>
+      {isPresetAvatarLoading[index] && (
+        <SkeletonCircle size="24" position="absolute" />
+      )}
+      <Avatar
+        key={index}
+        onClick={() => handleClickAvatar(index)}
+        size="xl"
+        src={presetAvatar}
+        onLoad={() => handlePresetAvatarLoad(index)}
+        opacity={isPresetAvatarLoading[index] ? 0 : 1}
+        _hover={{
+          cursor: 'pointer',
+          transform: 'scale(1.1)',
+          transition: 'all 0.2s ease',
+        }}
+      />
+    </Box>
   ));
 
-  function handleClickAvatar(index) {
-    console.log(index);
-  }
+  const handlePresetAvatarLoad = (index) => {
+    setIsPresetAvatarLoading((prev) => ({
+      ...prev,
+      [index]: false,
+    }));
+  };
 
-  function handleClickRemoveAvatar() {
-    console.log('remove avatar');
-  }
+  const handleClickAvatar = (index) => {
+    addAvatar(presetAvatars[index]);
+  };
 
-  function handleClickAddAvatar() {
-    console.log('add avatar');
-  }
+  const handleClickChangeAvatar = () => {
+    fileInputRef.current.click();
+  };
 
-  {
-    /*
-    How to create a Upload file on react:
-    https://www.youtube.com/watch?v=pWd6Enu2Pjs&t=562s
-    */
-  }
-  {
-    /*
-    const handleFileChange = (event) => {
-      const file = event.target.files[0];
-      if (file && file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          setImagePreview(e.target.result);
-        };
-        reader.readAsDataURL(file);
+  const handleFileChangeAvatar = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.type.match('image.*')) {
+        const imageUrl = URL.createObjectURL(file);
+        addAvatar(imageUrl);
       } else {
-        alert('Please select a valid image file.');
+        toast.error('Please select an image file');
       }
-    };
-    */
-  }
+    }
+  };
 
-  function handleFileChange(event) {
-    console.log('File change');
-  }
+  // Adiciona imagem no portrait e prepara para enviar
+  const addAvatar = (image) => {
+    const previousImage = avatarData.image;
 
-  {
-    /* Checa se o avatar é disponível para usar, 
-    retornado pelo back (provavelmente) 
-  */
-  }
+    try {
+      setIsAvatarLoading(true);
+      setAvatarData((prevData) => ({
+        ...prevData,
+        image,
+      }));
+    } catch (error) {
+      toast.error('Error ao adionar avatar no icone:', error);
+      // Rollback
+      setAvatarData((prevData) => ({
+        ...prevData,
+        image: previousImage,
+      }));
+    } finally {
+      setIsAvatarLoading(false);
+    }
+  };
 
-  function checkAvatarValidation() {}
+  const uploadingAvatar = () => {
+    try {
+      const response = sendDataToParent(avatarData);
+      if (!response.ok) {
+        alert('Ocorre um erro ao enviar imagem!');
+        console.error(`Error: ${response}`);
+      }
+    } catch (error) {
+      console.error('Erro interno! Falha ao enviar imagem para sistema', error);
+    }
+  };
+
+  const handleSaveAvatar = async () => {
+    try {
+      const hasImageChanged = avatarData?.image !== get(user, 'avatar', '');
+
+      if (!hasImageChanged) {
+        toast.warning('Nenhuma alteração detectada.');
+        return;
+      }
+
+      uploadingAvatar();
+      onClose();
+    } catch (error) {
+      toast.error('Não foi possível salvar as alterações.');
+      console.error('Erro ao salvar avatar:', error);
+    }
+  };
 
   return (
     <>
-      <Box>
-        {/* File Input */}
-        <Input
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-          display="none"
-          id="file-upload"
-        />
-        {/* Custom Button */}
-        <Button
-          as="label"
-          htmlFor="file-upload"
-          colorScheme="primary"
-          cursor="pointer">
-          Adicionar imagem do computador
-        </Button>
-        {/* Image Preview */}
-        {imagePreview && (
-          <Box mt={4}>
-            <Image
-              src={imagePreview}
-              alt="Preview"
-              boxSize="150px"
-              borderRadius="md"
-            />
-          </Box>
-        )}
-      </Box>
-
       <VStack spacing={6} align="stretch">
         <Box>
-          <Text fontWeight={500}>Seu avatar</Text>
           <HStack spacing={8} py={2} align="center">
-            <Avatar
-              key={user.id}
-              size="xl"
-              name={get(user, 'name', '???')}
-              src={get(user, 'avatar', '???')}
+            {isAvatarLoading ? (
+              <SkeletonCircle size="24" />
+            ) : (
+              <Avatar
+                key={user.id}
+                size="xl"
+                name={avatarData.name}
+                src={avatarData.image}
+              />
+            )}
+            <Input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChangeAvatar}
+              accept="image/*"
+              display="none"
             />
-            <VStack spacing={3} width="170px">
-              <Button
-                width="100%"
-                colorScheme="blackAlpha"
-                onClick={() => handleClickAddAvatar()}>
-                Adicionar avatar
-              </Button>
-              <Button
-                width="100%"
-                colorScheme="blackAlpha"
-                onClick={() => handleClickRemoveAvatar()}>
-                Remover avatar
-              </Button>
-            </VStack>
+            <Button
+              leftIcon={<IoMdDownload size="20px" />}
+              w="225px"
+              h="45px"
+              colorScheme="blackAlpha"
+              onClick={() => handleClickChangeAvatar()}>
+              Carregar imagem
+            </Button>
           </HStack>
         </Box>
 
-        {/* Ajustar o espa'camento dos avatares padrao */}
         <Box>
           <Text fontWeight={500}>Avatares padrão</Text>
           <Flex minChildWidth="100px" flexWrap="wrap" gap={6} py={2}>
@@ -165,17 +173,29 @@ const AvatarSelector = () => {
 
         <Box>
           <Button
-            disabled={checkAvatarValidation}
+            disabled={isAvatarLoading}
             colorScheme="primary"
             type="submit"
-            onClick={() => handleClickAddAvatar()}
-            isLoading={loading}>
-            Salvar
+            onClick={handleSaveAvatar}
+            isLoading={isAvatarLoading}>
+            Ok
           </Button>
         </Box>
       </VStack>
     </>
   );
 };
+
+// Placeholder avatars
+const presetAvatars = [
+  'https://avatar.iran.liara.run/public/46',
+  'https://avatar.iran.liara.run/public/90',
+  'https://avatar.iran.liara.run/public/22',
+  'https://avatar.iran.liara.run/public/57',
+  'https://avatar.iran.liara.run/public/14',
+  'https://avatar.iran.liara.run/public/79',
+  'https://avatar.iran.liara.run/public/18',
+  'https://avatar.iran.liara.run/public/100',
+];
 
 export default AvatarSelector;
