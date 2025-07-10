@@ -25,36 +25,34 @@ React, Docker, Flask, pgAdminSQL
 
 O [Link](https://drive.google.com/drive/folders/1z0qnA4ehYOzNW1zUNNMTGxRZliSizoqD) tem algumas reuniões antigas do projeto, assistam o segundo vídeo e façam as seguintes alterações também:
 
-### pull official base image
+```
+# pull official base image
 FROM node:18-alpine
 ENV NODE_ENV=development
 
-### set working directory
+# set working directory
 WORKDIR /app
 
-### add `/app/node_modules/.bin` to $PATH
+# add `/app/node_modules/.bin` to $PATH
 
 ENV PATH=/app/node_modules/.bin:$PATH
 
-### install app dependencies
+# install app dependencies
 COPY package.json .
-
 COPY yarn.lock .
-
 RUN yarn install
-
 RUN yarn global add eslint
-
 RUN yarn global add react-scripts@4.0.3
 
-### add app
+#madd app
 COPY . .
 
 EXPOSE 3000
 
-### start app
+# start app
 ENV NODE_OPTIONS=--openssl-legacy-provider
 CMD ["yarn", "start"]
+```
 
 ## **Protótipo**
 [Link do Figma](https://www.figma.com/design/Z0QdeIBaIOQEqHDpdP8Dqe/Admin-dash?node-id=6-163&t=9WkzdBZDKI3XitWL-1)
